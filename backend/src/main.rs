@@ -13,7 +13,9 @@ mod handlers {
 }
 
 use crate::cli::{Cli, Commands};
+use crate::config::Config;
 use crate::handlers::index::hello_api;
+use crate::handlers::yt_dlp::status::yt_dlp_status;
 use anyhow::Context;
 use axum::routing::get;
 use axum::Router;
@@ -24,6 +26,11 @@ use tower_http::trace::{
 };
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
+
+#[derive(Debug, Clone)]
+struct AppState {
+    config: Config,
+}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -46,22 +53,27 @@ async fn main() -> anyhow::Result<()> {
                 .context("Failed to set global default tracing subscriber")?;
 
             let trace_layer = TraceLayer::new_for_http()
-                .make_span_with(DefaultMakeSpan::new().include_headers(true))
+                .make_span_with(DefaultMakeSpan::new().include_headers(false))
                 .on_request(DefaultOnRequest::new().level(Level::DEBUG))
                 .on_response(DefaultOnResponse::new().level(Level::DEBUG))
                 .on_failure(DefaultOnFailure::new());
 
-            let bind_addr = format!(
-                "{}:{}",
-                &config.server_settings.host, &config.server_settings.port
-            );
+            let app_state = AppState {
+                config: config.clone(),
+            };
 
             let app = Router::new()
                 .route("/", get(hello_api))
+                .route("/yt-dlp/status", get(yt_dlp_status))
                 .layer(tower_http::catch_panic::CatchPanicLayer::new())
                 .layer(trace_layer)
                 .layer(CompressionLayer::new())
-                .with_state(config);
+                .with_state(app_state);
+
+            let bind_addr = format!(
+                "{}:{}",
+                config.server_settings.host, config.server_settings.port
+            );
 
             let listener = tokio::net::TcpListener::bind(bind_addr.clone())
                 .await
