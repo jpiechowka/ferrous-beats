@@ -25,4 +25,7 @@ pub struct RunCommand {
     /// Server host
     #[arg(short = 'a', long = "host", default_value = "127.0.0.1")]
     pub host: String,
+    /// Download path for yt-dlp (A feature-rich command-line audio/video downloader)
+    #[arg(short = 'y', long = "yt-dlp-download-dir", default_value = "yt-dlp")]
+    pub dlp_download_dir: String,
 }

@@ -1,19 +1,20 @@
 use crate::cli;
 use tracing::Level;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Config {
     pub server_settings: ServerSettings,
     pub logging_settings: LoggingSettings,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ServerSettings {
     pub port: u16,
     pub host: String,
+    pub dlp_download_dir: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LoggingSettings {
     pub level: Level,
 }
@@ -34,6 +35,7 @@ pub fn cli_to_config(
     let server_settings = ServerSettings {
         port: run_command.port,
         host: run_command.host.clone(),
+        dlp_download_dir: run_command.dlp_download_dir.clone(),
     };
 
     Ok(Config {

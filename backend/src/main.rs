@@ -51,16 +51,17 @@ async fn main() -> anyhow::Result<()> {
                 .on_response(DefaultOnResponse::new().level(Level::DEBUG))
                 .on_failure(DefaultOnFailure::new());
 
+            let bind_addr = format!(
+                "{}:{}",
+                &config.server_settings.host, &config.server_settings.port
+            );
+
             let app = Router::new()
                 .route("/", get(hello_api))
                 .layer(tower_http::catch_panic::CatchPanicLayer::new())
                 .layer(trace_layer)
-                .layer(CompressionLayer::new());
-
-            let bind_addr = format!(
-                "{}:{}",
-                config.server_settings.host, config.server_settings.port
-            );
+                .layer(CompressionLayer::new())
+                .with_state(config);
 
             let listener = tokio::net::TcpListener::bind(bind_addr.clone())
                 .await
