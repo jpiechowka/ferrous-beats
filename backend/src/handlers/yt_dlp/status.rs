@@ -4,7 +4,7 @@ use axum::http::StatusCode;
 use axum::Json;
 use serde::Serialize;
 use std::path::Path;
-use tracing::debug;
+use tracing::{debug, warn};
 
 #[derive(Serialize)]
 pub struct YtDlpStatusResponse {
@@ -24,6 +24,10 @@ pub async fn yt_dlp_status(
         exists,
         path: dlp_dir.to_string(),
     };
+
+    if !exists {
+        warn!("yt-dlp download directory does not exist: {}", dlp_dir);
+    }
 
     (StatusCode::OK, Json(status))
 }
