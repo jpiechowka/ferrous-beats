@@ -1,15 +1,23 @@
 mod cli;
 mod config;
-mod errors;
+
+mod handlers {
+    pub mod download;
+
+    pub mod yt_dlp {
+        pub mod status;
+        pub mod update;
+    }
+    pub mod errors;
+    pub mod index;
+}
 
 use crate::cli::{Cli, Commands};
-use crate::errors::ServerError;
+use crate::handlers::index::hello_api;
 use anyhow::Context;
-use axum::http::StatusCode;
 use axum::routing::get;
-use axum::{Json, Router};
+use axum::Router;
 use clap::Parser;
-use serde::Serialize;
 use tower_http::compression::CompressionLayer;
 use tower_http::trace::{
     DefaultMakeSpan, DefaultOnFailure, DefaultOnRequest, DefaultOnResponse, TraceLayer,
@@ -44,7 +52,7 @@ async fn main() -> anyhow::Result<()> {
                 .on_failure(DefaultOnFailure::new());
 
             let app = Router::new()
-                .route("/", get(hello_json))
+                .route("/", get(hello_api))
                 .layer(tower_http::catch_panic::CatchPanicLayer::new())
                 .layer(trace_layer)
                 .layer(CompressionLayer::new());
@@ -70,17 +78,4 @@ async fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
-}
-
-#[derive(Serialize)]
-struct Response {
-    message: &'static str,
-}
-
-async fn hello_json() -> Result<(StatusCode, Json<Response>), ServerError> {
-    let response = Response {
-        message: "Hello from Ferrous Beats! Welcome to the API.",
-    };
-
-    Ok((StatusCode::OK, Json(response)))
 }

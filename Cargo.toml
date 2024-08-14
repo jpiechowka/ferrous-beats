@@ -3,7 +3,6 @@ resolver = "2"
 members = ["ui", "backend"]
 
 [workspace.package]
-name = "ferrous-beats"
 version = "0.1.0"
 edition = "2021"
 authors = ["Janusz Piechówka"]
@@ -12,12 +11,12 @@ license = "MIT OR Apache-2.0"
 description = "Rust music player with music downloads, labeling and encoding support"
 readme = "README.md"
 
-[workspace.profile.release]
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[profile.release]
 opt-level = 3
 codegen-units = 1
 panic = "abort"
 lto = true
 strip = true
-
-[workspace.lints.rust]
-unsafe_code = "forbid"
