@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 #[component]
-pub(crate) fn Navbar() -> Element {
+pub fn Navbar() -> Element {
     rsx! {
         nav { class: "bg-amber-800",
             div {class: "mx-auto px-4 py-4 sm:px-6 lg:px-8",

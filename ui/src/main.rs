@@ -1,13 +1,13 @@
 #![allow(non_snake_case)]
 
 mod pages {
-    pub(crate) mod converter;
-    pub(crate) mod downloader;
-    pub(crate) mod music_library;
+    pub mod converter;
+    pub mod downloader;
+    pub mod music_library;
 }
 mod components {
-    pub(crate) mod footer;
-    pub(crate) mod navbar;
+    pub mod footer;
+    pub mod navbar;
 }
 
 use dioxus::prelude::*;

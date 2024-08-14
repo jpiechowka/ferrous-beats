@@ -3,7 +3,7 @@ use crate::components::navbar::Navbar;
 use dioxus::prelude::*;
 
 #[component]
-pub(crate) fn MusicLibrary() -> Element {
+pub fn MusicLibrary() -> Element {
     rsx! {
         div { class: "flex flex-col min-h-screen",
             Navbar {}
