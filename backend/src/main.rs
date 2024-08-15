@@ -1,12 +1,10 @@
 mod cli;
 mod config;
-
 mod handlers {
     pub mod download {
         pub mod audio;
         pub mod video;
     }
-
     pub mod yt_dlp {
         pub mod download;
         pub mod status;
@@ -19,6 +17,8 @@ mod handlers {
 
 use crate::cli::{Cli, Commands};
 use crate::config::Config;
+use crate::handlers::download::audio::handle_audio_download;
+use crate::handlers::download::video::handle_video_download;
 use crate::handlers::index::handle_api_hello;
 use crate::handlers::yt_dlp::download::handle_yt_dlp_download;
 use crate::handlers::yt_dlp::status::handle_yt_dlp_status;
@@ -77,6 +77,8 @@ async fn main() -> anyhow::Result<()> {
 
             let app = Router::new()
                 .route("/", get(handle_api_hello))
+                .route("/download/audio", post(handle_audio_download))
+                .route("/download/video", post(handle_video_download))
                 .route("/yt-dlp/download", post(handle_yt_dlp_download))
                 .route("/yt-dlp/status", post(handle_yt_dlp_status))
                 .route("/yt-dlp/update", post(handle_yt_dlp_update))
