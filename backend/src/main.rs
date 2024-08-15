@@ -22,15 +22,21 @@ use crate::handlers::index::handle_api_hello;
 use crate::handlers::yt_dlp::download::handle_yt_dlp_download;
 use crate::handlers::yt_dlp::status::handle_yt_dlp_status;
 use anyhow::Context;
+use axum::http::header;
 use axum::routing::get;
 use axum::Router;
 use clap::Parser;
 use tower_http::compression::CompressionLayer;
+use tower_http::cors::CorsLayer;
+use tower_http::decompression::DecompressionLayer;
+use tower_http::set_header::SetResponseHeaderLayer;
 use tower_http::trace::{
     DefaultMakeSpan, DefaultOnFailure, DefaultOnRequest, DefaultOnResponse, TraceLayer,
 };
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
+
+const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Clone)]
 struct AppState {
@@ -75,6 +81,37 @@ async fn main() -> anyhow::Result<()> {
                 .layer(tower_http::catch_panic::CatchPanicLayer::new())
                 .layer(trace_layer)
                 .layer(CompressionLayer::new())
+                .layer(DecompressionLayer::new())
+                .layer(CorsLayer::permissive())
+                .layer(SetResponseHeaderLayer::overriding(
+                    header::SERVER,
+                    header::HeaderValue::from_str(&format!(
+                        "Ferrous Beats/{} ({})",
+                        APP_VERSION,
+                        std::env::consts::OS,
+                    ))
+                    .context("Failed to configure Server header layer")?,
+                ))
+                .layer(SetResponseHeaderLayer::overriding(
+                    header::CACHE_CONTROL,
+                    header::HeaderValue::from_static("no-store"),
+                ))
+                .layer(SetResponseHeaderLayer::overriding(
+                    header::X_FRAME_OPTIONS,
+                    header::HeaderValue::from_static("DENY"),
+                ))
+                .layer(SetResponseHeaderLayer::overriding(
+                    header::X_CONTENT_TYPE_OPTIONS,
+                    header::HeaderValue::from_static("nosniff"),
+                ))
+                .layer(SetResponseHeaderLayer::overriding(
+                    header::REFERRER_POLICY,
+                    header::HeaderValue::from_static("no-referrer"),
+                ))
+                .layer(SetResponseHeaderLayer::overriding(
+                    header::CONTENT_SECURITY_POLICY,
+                    header::HeaderValue::from_static("default-src 'none'"),
+                ))
                 .with_state(app_state);
 
             let bind_addr = format!(
