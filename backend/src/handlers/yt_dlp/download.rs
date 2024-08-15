@@ -47,7 +47,7 @@ pub async fn yt_dlp_download(
     });
     let mut file = tokio::fs::File::create_new(file_path.clone())
         .await
-        .context("Failed to create new yt-dlp file. File already exists")?;
+        .context("Failed to create new yt-dlp file")?;
     tokio::io::copy(&mut content.as_ref(), &mut file)
         .await
         .context("Failed to write yt-dlp file")?;
