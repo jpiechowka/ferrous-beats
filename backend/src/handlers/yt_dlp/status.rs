@@ -1,5 +1,6 @@
 use crate::handlers::errors::ServerError;
 use crate::AppState;
+use anyhow::Context;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::Json;
@@ -7,11 +8,10 @@ use serde::Serialize;
 use std::path::Path;
 use tokio::fs::metadata;
 use tokio::process::Command;
-use tracing::{debug, error, info, instrument};
+use tracing::{debug, info, instrument};
 
 #[derive(Debug, Serialize)]
 pub struct YtDlpStatusResponse {
-    executable_exists: bool,
     path: String,
     executable_version: Option<String>,
     version_execution_results: VersionExecutionResults,
@@ -19,9 +19,7 @@ pub struct YtDlpStatusResponse {
 
 #[derive(Debug, Serialize)]
 pub struct VersionExecutionResults {
-    was_version_command_run: bool,
     command_completed_successfully: bool,
-    command_error: Option<String>,
     exit_status: Option<i32>,
     stdout: Option<String>,
     stderr: Option<String>,
@@ -41,87 +39,47 @@ pub async fn handle_yt_dlp_status(
         "yt-dlp"
     });
 
-    let executable_exists = metadata(&executable_path).await.is_ok();
-    if !executable_exists {
-        return Ok((
-            StatusCode::BAD_REQUEST,
-            Json(YtDlpStatusResponse {
-                executable_exists: false,
-                executable_version: None,
-                path: executable_path.to_string_lossy().to_string(),
-                version_execution_results: VersionExecutionResults {
-                    was_version_command_run: false,
-                    command_completed_successfully: false,
-                    command_error: None,
-                    exit_status: None,
-                    stdout: None,
-                    stderr: None,
-                },
-            }),
-        ));
-    }
+    // Check if executable exists first
+    metadata(&executable_path)
+        .await
+        .context("Failed to get metadata of yt-dlp executable")?;
 
     info!("Running yt-dlp version command");
 
-    match Command::new(&executable_path)
+    let command_output = Command::new(&executable_path)
         .arg("--version")
         .output()
         .await
-    {
-        Ok(output) => {
-            let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-            let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-            let exit_status = output.status.code();
-            let command_completed_successfully = exit_status.map_or(false, |code| code == 0);
+        .context("Failed to run yt-dlp version command")?;
 
-            info!("yt-dlp version command was executed");
+    let stdout = String::from_utf8_lossy(&command_output.stdout).to_string();
+    let stderr = String::from_utf8_lossy(&command_output.stderr).to_string();
+    let exit_status = command_output.status.code();
+    let command_completed_successfully = exit_status.map_or(false, |code| code == 0);
 
-            Ok((
-                if command_completed_successfully {
-                    StatusCode::OK
-                } else {
-                    StatusCode::BAD_REQUEST
-                },
-                Json(YtDlpStatusResponse {
-                    executable_exists: true,
-                    executable_version: if command_completed_successfully {
-                        Some(parse_version(&stdout))
-                    } else {
-                        None
-                    },
-                    path: executable_path.to_string_lossy().to_string(),
-                    version_execution_results: VersionExecutionResults {
-                        was_version_command_run: true,
-                        command_completed_successfully,
-                        command_error: None,
-                        exit_status,
-                        stdout: Some(stdout),
-                        stderr: Some(stderr),
-                    },
-                }),
-            ))
-        }
-        Err(err) => {
-            error!("Error running yt-dlp version command: {}", err);
+    info!("yt-dlp version command was executed");
 
-            Ok((
-                StatusCode::BAD_REQUEST,
-                Json(YtDlpStatusResponse {
-                    executable_exists: true,
-                    executable_version: None,
-                    path: executable_path.to_string_lossy().to_string(),
-                    version_execution_results: VersionExecutionResults {
-                        was_version_command_run: true,
-                        command_completed_successfully: false,
-                        command_error: Some(err.to_string()),
-                        exit_status: None,
-                        stdout: None,
-                        stderr: None,
-                    },
-                }),
-            ))
-        }
-    }
+    Ok((
+        if command_completed_successfully {
+            StatusCode::OK
+        } else {
+            StatusCode::BAD_REQUEST
+        },
+        Json(YtDlpStatusResponse {
+            executable_version: if command_completed_successfully {
+                Some(parse_version(&stdout))
+            } else {
+                None
+            },
+            path: executable_path.to_string_lossy().to_string(),
+            version_execution_results: VersionExecutionResults {
+                command_completed_successfully,
+                exit_status,
+                stdout: Some(stdout),
+                stderr: Some(stderr),
+            },
+        }),
+    ))
 }
 
 #[instrument]
