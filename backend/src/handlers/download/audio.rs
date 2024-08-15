@@ -1,6 +1,5 @@
 use crate::handlers::errors::ServerError;
 use crate::handlers::shared_model::CommandExecutionResults;
-use crate::handlers::yt_dlp::status::YtDlpStatusResponse;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;
@@ -11,7 +10,6 @@ use std::path::Path;
 use tokio::fs::{create_dir_all, metadata};
 use tokio::process::Command;
 use tracing::{debug, info, instrument};
-use tracing_subscriber::fmt::format;
 
 #[derive(Debug, Deserialize)]
 pub struct DownloadAudioRequest {
@@ -78,6 +76,8 @@ pub async fn handle_audio_download(
     let command_completed_successfully = exit_status.map_or(false, |code| code == 0);
 
     info!("yt-dlp audio download command was executed");
+
+    // TODO: Implement moving files to the library directory if successful
 
     Ok((
         if command_completed_successfully {
