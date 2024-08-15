@@ -7,6 +7,8 @@ use axum::Json;
 use reqwest::Client;
 use serde::Serialize;
 use std::path::Path;
+use tokio::fs::{create_dir_all, File};
+use tokio::io::copy;
 use tracing::{debug, info};
 
 #[derive(Serialize)]
@@ -36,7 +38,7 @@ pub async fn yt_dlp_download(
     let content = resp.bytes().await.context("Failed to read response body")?;
 
     let download_dir = Path::new(&app_state.config.server_settings.dlp_download_dir);
-    tokio::fs::create_dir_all(download_dir)
+    create_dir_all(download_dir)
         .await
         .context("Failed to create download directory for yt-dlp")?;
 
@@ -45,10 +47,10 @@ pub async fn yt_dlp_download(
     } else {
         "yt-dlp"
     });
-    let mut file = tokio::fs::File::create_new(file_path.clone())
+    let mut file = File::create_new(file_path.clone())
         .await
         .context("Failed to create new yt-dlp file")?;
-    tokio::io::copy(&mut content.as_ref(), &mut file)
+    copy(&mut content.as_ref(), &mut file)
         .await
         .context("Failed to write yt-dlp file")?;
 
