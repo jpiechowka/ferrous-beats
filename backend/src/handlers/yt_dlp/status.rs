@@ -1,20 +1,22 @@
+use crate::handlers::errors::ServerError;
 use crate::AppState;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::Json;
 use serde::Serialize;
 use std::path::Path;
-use tracing::{debug, warn};
+use tracing::{debug, instrument, warn};
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct YtDlpStatusResponse {
     exists: bool,
     path: String,
 }
 
-pub async fn yt_dlp_status(
+#[instrument(err, skip(app_state))]
+pub async fn handle_yt_dlp_status(
     State(app_state): State<AppState>,
-) -> (StatusCode, Json<YtDlpStatusResponse>) {
+) -> Result<(StatusCode, Json<YtDlpStatusResponse>), ServerError> {
     debug!("Handling checking of yt-dlp status");
 
     let dlp_dir = &app_state.config.server_settings.dlp_download_dir;
@@ -29,5 +31,5 @@ pub async fn yt_dlp_status(
         warn!("yt-dlp download directory does not exist: {}", dlp_dir);
     }
 
-    (StatusCode::OK, Json(status))
+    Ok((StatusCode::OK, Json(status)))
 }

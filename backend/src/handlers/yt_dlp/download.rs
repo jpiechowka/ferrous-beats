@@ -9,15 +9,16 @@ use serde::Serialize;
 use std::path::Path;
 use tokio::fs::{create_dir_all, File};
 use tokio::io::copy;
-use tracing::{debug, info};
+use tracing::{debug, info, instrument};
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct YtDlpDownloadResponse {
     download_url: String,
     path_on_disk: String,
 }
 
-pub async fn yt_dlp_download(
+#[instrument(err, skip(app_state))]
+pub async fn handle_yt_dlp_download(
     State(app_state): State<AppState>,
 ) -> Result<(StatusCode, Json<YtDlpDownloadResponse>), ServerError> {
     debug!("Handling downloading of yt-dlp from GitHub");

@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct YtDlpUpdateRequest {}
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct YtDlpUpdateResponse {
     exists: bool,
     path: String,

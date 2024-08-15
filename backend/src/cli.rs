@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-#[derive(Parser, Debug)]
+#[derive(Debug, Parser)]
 #[command(version, about)]
 pub struct Cli {
     /// Enable verbose logging
@@ -17,7 +17,7 @@ pub enum Commands {
     Run(RunCommand),
 }
 
-#[derive(Parser, Debug)]
+#[derive(Debug, Parser)]
 pub struct RunCommand {
     /// Server port
     #[arg(short = 'p', long = "port", default_value_t = 13337)]

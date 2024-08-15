@@ -18,9 +18,9 @@ mod handlers {
 
 use crate::cli::{Cli, Commands};
 use crate::config::Config;
-use crate::handlers::index::hello_api;
-use crate::handlers::yt_dlp::download::yt_dlp_download;
-use crate::handlers::yt_dlp::status::yt_dlp_status;
+use crate::handlers::index::handle_api_hello;
+use crate::handlers::yt_dlp::download::handle_yt_dlp_download;
+use crate::handlers::yt_dlp::status::handle_yt_dlp_status;
 use anyhow::Context;
 use axum::routing::get;
 use axum::Router;
@@ -68,10 +68,10 @@ async fn main() -> anyhow::Result<()> {
             };
 
             let app = Router::new()
-                .route("/", get(hello_api))
+                .route("/", get(handle_api_hello))
                 // TODO: Change to POST?
-                .route("/yt-dlp/download", get(yt_dlp_download))
-                .route("/yt-dlp/status", get(yt_dlp_status))
+                .route("/yt-dlp/download", get(handle_yt_dlp_download))
+                .route("/yt-dlp/status", get(handle_yt_dlp_status))
                 .layer(tower_http::catch_panic::CatchPanicLayer::new())
                 .layer(trace_layer)
                 .layer(CompressionLayer::new())
