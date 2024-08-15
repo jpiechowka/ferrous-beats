@@ -126,7 +126,7 @@ pub async fn handle_yt_dlp_status(
 
 #[instrument]
 fn parse_version(version_string: &str) -> String {
-    debug!("Parsing yt-dlp version string: {}", version_string);
+    debug!("Parsing yt-dlp version");
     version_string
         .trim()
         .chars()
