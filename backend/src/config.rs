@@ -4,6 +4,8 @@ use tracing::Level;
 #[derive(Debug, Clone)]
 pub struct Config {
     pub server_settings: ServerSettings,
+    pub audio_download_settings: AudioDownloadSettings,
+    pub video_download_settings: VideoDownloadSettings,
     pub logging_settings: LoggingSettings,
 }
 
@@ -12,6 +14,16 @@ pub struct ServerSettings {
     pub port: u16,
     pub host: String,
     pub dlp_download_dir: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct AudioDownloadSettings {
+    pub download_dir: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct VideoDownloadSettings {
+    pub download_dir: String,
 }
 
 #[derive(Debug, Clone)]
@@ -38,8 +50,18 @@ pub fn cli_to_config(
         dlp_download_dir: run_command.dlp_download_dir.clone(),
     };
 
+    let audio_download_settings = AudioDownloadSettings {
+        download_dir: run_command.audio_download_dir.clone(),
+    };
+
+    let video_download_settings = VideoDownloadSettings {
+        download_dir: run_command.video_download_dir.clone(),
+    };
+
     Ok(Config {
-        logging_settings,
         server_settings,
+        audio_download_settings,
+        video_download_settings,
+        logging_settings,
     })
 }
