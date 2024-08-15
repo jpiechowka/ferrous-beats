@@ -25,13 +25,24 @@ pub struct RunCommand {
     /// Server host
     #[arg(long = "host", default_value = "127.0.0.1")]
     pub host: String,
+    /// Your file library directory
+    #[arg(short = 'l', long = "library-dir", default_value = "library")]
+    pub library_dir: String,
     /// Download directory for yt-dlp (A feature-rich command-line audio/video downloader)
     #[arg(short = 'y', long = "yt-dlp-download-dir", default_value = "yt-dlp")]
     pub dlp_download_dir: String,
-    /// Download directory for audio files
-    #[arg(short = 'a', long = "audio-download-dir", default_value = "music")]
+    /// Download directory for audio files. They will be moved to library directory after successful download
+    #[arg(
+        short = 'a',
+        long = "audio-download-dir",
+        default_value = "downloads/music"
+    )]
     pub audio_download_dir: String,
-    /// Download directory for video files
-    #[arg(short = 'v', long = "video-download-dir", default_value = "videos")]
+    /// Download directory for video files. They will be moved to library directory after successful download
+    #[arg(
+        short = 'v',
+        long = "video-download-dir",
+        default_value = "downloads/videos"
+    )]
     pub video_download_dir: String,
 }
