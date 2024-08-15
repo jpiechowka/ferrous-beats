@@ -21,9 +21,10 @@ use crate::config::Config;
 use crate::handlers::index::handle_api_hello;
 use crate::handlers::yt_dlp::download::handle_yt_dlp_download;
 use crate::handlers::yt_dlp::status::handle_yt_dlp_status;
+use crate::handlers::yt_dlp::update::handle_yt_dlp_update;
 use anyhow::Context;
 use axum::http::header;
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::Router;
 use clap::Parser;
 use tower_http::compression::CompressionLayer;
@@ -75,9 +76,9 @@ async fn main() -> anyhow::Result<()> {
 
             let app = Router::new()
                 .route("/", get(handle_api_hello))
-                // TODO: Change to POST?
-                .route("/yt-dlp/download", get(handle_yt_dlp_download))
-                .route("/yt-dlp/status", get(handle_yt_dlp_status))
+                .route("/yt-dlp/download", post(handle_yt_dlp_download))
+                .route("/yt-dlp/status", post(handle_yt_dlp_status))
+                .route("/yt-dlp/update", post(handle_yt_dlp_update))
                 .layer(tower_http::catch_panic::CatchPanicLayer::new())
                 .layer(trace_layer)
                 .layer(CompressionLayer::new())
