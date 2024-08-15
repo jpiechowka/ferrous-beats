@@ -26,12 +26,12 @@ pub async fn handle_yt_dlp_download(
     let http_client = Client::new();
     let os = std::env::consts::OS;
 
-    let url = get_download_url(os).await?;
+    let download_url = get_download_url(os).await?;
 
-    info!("Downloading yt-dlp from {}", url);
+    info!("Downloading yt-dlp from {}", download_url);
 
     let resp = http_client
-        .get(url)
+        .get(download_url)
         .send()
         .await
         .context("Error sending request to download yt-dlp from GitHub")?;
@@ -77,12 +77,13 @@ pub async fn handle_yt_dlp_download(
     Ok((
         StatusCode::OK,
         Json(YtDlpDownloadResponse {
-            download_url: url.to_string(),
+            download_url: download_url.to_string(),
             path_on_disk: file_path.to_string_lossy().to_string(),
         }),
     ))
 }
 
+#[instrument(err)]
 async fn get_download_url(os: &str) -> Result<&str, anyhow::Error> {
     let url = match os {
         "linux" => "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp",
