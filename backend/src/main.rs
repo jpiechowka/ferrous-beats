@@ -14,6 +14,7 @@ mod handlers {
     }
     pub mod errors;
     pub mod index;
+    pub mod shared_model;
 }
 
 use crate::cli::{Cli, Commands};

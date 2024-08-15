@@ -1,4 +1,5 @@
 use crate::handlers::errors::ServerError;
+use crate::handlers::shared_model::CommandExecutionResults;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;
@@ -14,15 +15,7 @@ use tracing::{debug, info, instrument};
 pub struct YtDlpStatusResponse {
     path: String,
     executable_version: Option<String>,
-    version_execution_results: VersionExecutionResults,
-}
-
-#[derive(Debug, Serialize)]
-pub struct VersionExecutionResults {
-    command_completed_successfully: bool,
-    exit_status: Option<i32>,
-    stdout: Option<String>,
-    stderr: Option<String>,
+    version_execution_results: CommandExecutionResults,
 }
 
 #[instrument(err, skip(app_state))]

@@ -1,4 +1,5 @@
 use crate::handlers::errors::ServerError;
+use crate::handlers::shared_model::CommandExecutionResults;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;
@@ -28,15 +29,7 @@ pub enum YtDlpUpdateChannels {
 pub struct YtDlpUpdateResponse {
     path: String,
     update_channel: String,
-    update_execution_results: UpdateExecutionResults,
-}
-
-#[derive(Debug, Serialize)]
-pub struct UpdateExecutionResults {
-    command_completed_successfully: bool,
-    exit_status: Option<i32>,
-    stdout: Option<String>,
-    stderr: Option<String>,
+    update_execution_results: CommandExecutionResults,
 }
 
 #[instrument(err, skip(app_state))]
