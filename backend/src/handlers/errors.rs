@@ -3,14 +3,20 @@ use axum::response::IntoResponse;
 
 pub struct ServerError(anyhow::Error);
 
-impl From<anyhow::Error> for ServerError {
-    fn from(value: anyhow::Error) -> Self {
-        Self(value)
+impl<E> From<E> for ServerError
+where
+    E: Into<anyhow::Error>,
+{
+    fn from(err: E) -> Self {
+        Self(err.into())
     }
 }
-
 impl IntoResponse for ServerError {
     fn into_response(self) -> axum::response::Response {
-        (StatusCode::INTERNAL_SERVER_ERROR, self.0.to_string()).into_response()
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Something went wrong: {}", self.0),
+        )
+            .into_response()
     }
 }

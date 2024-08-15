@@ -2,9 +2,13 @@ mod cli;
 mod config;
 
 mod handlers {
-    pub mod download;
+    pub mod download {
+        pub mod audio;
+        pub mod video;
+    }
 
     pub mod yt_dlp {
+        pub mod download;
         pub mod status;
         pub mod update;
     }
@@ -15,6 +19,7 @@ mod handlers {
 use crate::cli::{Cli, Commands};
 use crate::config::Config;
 use crate::handlers::index::hello_api;
+use crate::handlers::yt_dlp::download::yt_dlp_download;
 use crate::handlers::yt_dlp::status::yt_dlp_status;
 use anyhow::Context;
 use axum::routing::get;
@@ -64,6 +69,8 @@ async fn main() -> anyhow::Result<()> {
 
             let app = Router::new()
                 .route("/", get(hello_api))
+                // TODO: Change to POST?
+                .route("/yt-dlp/download", get(yt_dlp_download))
                 .route("/yt-dlp/status", get(yt_dlp_status))
                 .layer(tower_http::catch_panic::CatchPanicLayer::new())
                 .layer(trace_layer)
