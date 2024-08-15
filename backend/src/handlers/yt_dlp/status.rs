@@ -64,7 +64,7 @@ pub async fn handle_yt_dlp_status(
     info!("Running yt-dlp version command");
 
     match Command::new(&executable_path)
-        .arg("--versionz")
+        .arg("--version")
         .output()
         .await
     {
