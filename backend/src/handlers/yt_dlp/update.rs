@@ -83,7 +83,7 @@ pub async fn handle_yt_dlp_update(
         Json(YtDlpUpdateResponse {
             path: executable_path.to_string_lossy().to_string(),
             update_channel: update_arg,
-            update_execution_results: UpdateExecutionResults {
+            update_execution_results: CommandExecutionResults {
                 command_completed_successfully,
                 exit_status,
                 stdout: Some(stdout),

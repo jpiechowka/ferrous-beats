@@ -65,7 +65,7 @@ pub async fn handle_yt_dlp_status(
                 None
             },
             path: executable_path.to_string_lossy().to_string(),
-            version_execution_results: VersionExecutionResults {
+            version_execution_results: CommandExecutionResults {
                 command_completed_successfully,
                 exit_status,
                 stdout: Some(stdout),

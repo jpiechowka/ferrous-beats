@@ -2,8 +2,8 @@ use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub struct CommandExecutionResults {
-    command_completed_successfully: bool,
-    exit_status: Option<i32>,
-    stdout: Option<String>,
-    stderr: Option<String>,
+    pub command_completed_successfully: bool,
+    pub exit_status: Option<i32>,
+    pub stdout: Option<String>,
+    pub stderr: Option<String>,
 }
