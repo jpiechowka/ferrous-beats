@@ -8,6 +8,7 @@ use crate::handlers::download::audio::handle_audio_download;
 use crate::handlers::download::video::handle_video_download;
 use crate::handlers::index::handle_api_hello;
 use crate::handlers::tools::chromaprint::download::handle_chromaprint_download;
+use crate::handlers::tools::chromaprint::status::handle_chromaprint_fpcalc_status;
 use crate::handlers::tools::ffmpeg::download::handle_ffmpeg_download;
 use crate::handlers::tools::ffmpeg::status::handle_ffmpeg_status;
 use crate::handlers::tools::yt_dlp::download::handle_yt_dlp_download;
@@ -81,7 +82,10 @@ async fn main() -> anyhow::Result<()> {
                     "/tools/chromaprint/download",
                     post(handle_chromaprint_download),
                 )
-                // .route("/tools/chromaprint/status", post())
+                .route(
+                    "/tools/chromaprint/status",
+                    post(handle_chromaprint_fpcalc_status),
+                )
                 .layer(tower_http::catch_panic::CatchPanicLayer::new())
                 .layer(trace_layer)
                 .layer(CompressionLayer::new())
