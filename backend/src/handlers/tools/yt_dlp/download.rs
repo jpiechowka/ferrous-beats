@@ -1,5 +1,6 @@
 use crate::handlers::errors::ServerError;
-use crate::handlers::shared_model::ToolDownloadResponse;
+use crate::handlers::shared::functions::tools::get_yt_dlp_download_url_and_output_file_name;
+use crate::handlers::shared::model::responses::ToolDownloadResponse;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;
@@ -58,28 +59,4 @@ pub async fn handle_yt_dlp_download(
             path_on_disk: download_file_path.to_string_lossy().to_string(),
         }),
     ))
-}
-
-#[instrument(err)]
-async fn get_yt_dlp_download_url_and_output_file_name(
-    os: &str,
-) -> Result<(&str, &str), anyhow::Error> {
-    // https://github.com/yt-dlp/yt-dlp/releases
-    let url = match os {
-        "linux" => (
-            "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp",
-            "yt-dlp",
-        ),
-        "windows" => (
-            "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe",
-            "yt-dlp.exe",
-        ),
-        "macos" => (
-            "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos",
-            "yt-dlp",
-        ),
-        os => anyhow::bail!("Unsupported operating system: {}", os),
-    };
-
-    Ok(url)
 }

@@ -1,12 +1,13 @@
 use crate::handlers::errors::ServerError;
-use crate::handlers::shared_funcs::{get_yt_dlp_executable_path, run_command};
-use crate::handlers::shared_model::CommandExecutionResults;
+use crate::handlers::shared::functions::commands::run_command;
+use crate::handlers::shared::functions::tools::get_yt_dlp_executable_path;
+use crate::handlers::shared::model::responses::MediaDownloadResponse;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::Json;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::path::Path;
 use tokio::fs::create_dir_all;
 use tracing::{debug, info, instrument};
@@ -16,17 +17,11 @@ pub struct DownloadAudioRequest {
     audio_url: String,
 }
 
-#[derive(Debug, Serialize)]
-pub struct DownloadAudioResponse {
-    requested_url: String,
-    download_audio_command_results: CommandExecutionResults,
-}
-
 #[instrument(err, skip(app_state))]
 pub async fn handle_audio_download(
     State(app_state): State<AppState>,
     Json(payload): Json<DownloadAudioRequest>,
-) -> Result<(StatusCode, Json<DownloadAudioResponse>), ServerError> {
+) -> Result<(StatusCode, Json<MediaDownloadResponse>), ServerError> {
     debug!("Handling audio download");
 
     let audio_download_dir = Path::new(&app_state.config.audio_download_settings.download_dir);
@@ -50,7 +45,7 @@ pub async fn handle_audio_download(
 
     info!("Using output path: {:?}", output_path_str);
 
-    let command_execution_result = run_command(
+    let command_execution_results = run_command(
         &yt_dlp_executable_path,
         &[
             "-x",
@@ -68,14 +63,14 @@ pub async fn handle_audio_download(
     // TODO: Implement moving files to the library directory if successful
 
     Ok((
-        if command_execution_result.command_completed_successfully {
+        if command_execution_results.command_completed_successfully {
             StatusCode::OK
         } else {
             StatusCode::BAD_REQUEST
         },
-        Json(DownloadAudioResponse {
+        Json(MediaDownloadResponse {
             requested_url: payload.audio_url,
-            download_audio_command_results: command_execution_result,
+            command_execution_results,
         }),
     ))
 }

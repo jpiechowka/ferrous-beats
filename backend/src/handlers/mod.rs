@@ -7,6 +7,19 @@ pub mod download {
     pub mod video;
 }
 
+pub mod shared {
+    pub mod functions {
+        pub mod commands;
+        pub mod files;
+        pub mod tools;
+    }
+
+    pub mod model {
+        pub mod commands;
+        pub mod responses;
+    }
+}
+
 pub mod tools {
     pub mod chromaprint {
         pub mod download;
@@ -27,5 +40,3 @@ pub mod tools {
 
 pub mod errors;
 pub mod index;
-pub mod shared_funcs;
-pub mod shared_model;

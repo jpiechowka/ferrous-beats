@@ -1,49 +1,42 @@
 use crate::handlers::errors::ServerError;
-use crate::handlers::shared_funcs::{get_yt_dlp_executable_path, run_command};
-use crate::handlers::shared_model::CommandExecutionResults;
+use crate::handlers::shared::functions::commands::run_command;
+use crate::handlers::shared::functions::tools::get_yt_dlp_executable_path;
+use crate::handlers::shared::model::responses::ToolStatusResponse;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::Json;
-use serde::Serialize;
-use tracing::{debug, info, instrument};
-
-#[derive(Debug, Serialize)]
-pub struct YtDlpStatusResponse {
-    path: String,
-    executable_version: Option<String>,
-    version_execution_results: CommandExecutionResults,
-}
+use tracing::{debug, instrument};
 
 #[instrument(err, skip(app_state))]
 pub async fn handle_yt_dlp_status(
     State(app_state): State<AppState>,
-) -> Result<(StatusCode, Json<YtDlpStatusResponse>), ServerError> {
+) -> Result<(StatusCode, Json<ToolStatusResponse>), ServerError> {
     debug!("Handling checking of yt-dlp status");
 
     let yt_dlp_executable_path = get_yt_dlp_executable_path(&app_state)
         .await
         .context("Failed to get yt-dlp executable path")?;
 
-    let command_execution_result = run_command(&yt_dlp_executable_path, &["--version"])
+    let command_execution_results = run_command(&yt_dlp_executable_path, &["--version"])
         .await
         .context("Failed to run yt-dlp version command")?;
 
     Ok((
-        if command_execution_result.command_completed_successfully {
+        if command_execution_results.command_completed_successfully {
             StatusCode::OK
         } else {
             StatusCode::BAD_REQUEST
         },
-        Json(YtDlpStatusResponse {
-            executable_version: if command_execution_result.command_completed_successfully {
-                Some(parse_yt_dlp_version(&command_execution_result.stdout))
+        Json(ToolStatusResponse {
+            executable_version: if command_execution_results.command_completed_successfully {
+                Some(parse_yt_dlp_version(&command_execution_results.stdout))
             } else {
                 None
             },
             path: yt_dlp_executable_path.to_string_lossy().to_string(),
-            version_execution_results: command_execution_result,
+            command_execution_results,
         }),
     ))
 }

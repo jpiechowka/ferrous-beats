@@ -1,5 +1,6 @@
 use crate::handlers::errors::ServerError;
-use crate::handlers::shared_model::ToolDownloadResponse;
+use crate::handlers::shared::functions::tools::get_ffmpeg_download_url_and_output_file_name;
+use crate::handlers::shared::model::responses::ToolDownloadResponse;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;
@@ -56,24 +57,4 @@ pub async fn handle_ffmpeg_download(
             path_on_disk: download_file_path.to_string_lossy().to_string(),
         }),
     ))
-}
-#[instrument(err)]
-async fn get_ffmpeg_download_url_and_output_file_name(
-    os: &str,
-) -> Result<(&str, &str), anyhow::Error> {
-    // https://ffmpeg.org/download.html
-    let url = match os {
-        "linux" => (
-            "https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz",
-            "ffmpeg.tar.xz",
-        ),
-        "windows" => (
-            "https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-full.7z",
-            "ffmpeg.7z",
-        ),
-        "macos" => ("https://evermeet.cx/ffmpeg/ffmpeg-7.0.2.7z", "ffmpeg.7z"),
-        os => anyhow::bail!("Unsupported operating system: {}", os),
-    };
-
-    Ok(url)
 }

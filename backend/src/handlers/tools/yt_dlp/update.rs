@@ -1,6 +1,7 @@
 use crate::handlers::errors::ServerError;
-use crate::handlers::shared_funcs::{get_yt_dlp_executable_path, run_command};
-use crate::handlers::shared_model::CommandExecutionResults;
+use crate::handlers::shared::functions::commands::run_command;
+use crate::handlers::shared::functions::tools::get_yt_dlp_executable_path;
+use crate::handlers::shared::model::commands::CommandExecutionResults;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;
