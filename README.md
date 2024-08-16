@@ -6,7 +6,8 @@ Heavily inspired by this talk by Andrew Kelley (creator of Zig programming langu
 
 A few main features:
 
-* Multiplatform (linux, windows and macos supported), with embedded UI for easy setup.
+* Multiplatform (linux, windows and macos supported), with embedded UI for an easy setup.
+* No system dependencies, download and run on any supported os (TODO)
 * Allows easy download of tools like: `yt-dlp`, `ffmpeg` and `chromaprint`. No need to install anything.
 * Audio / video downloads from multiple services using `yt-dlp`. You can download your favourite songs from YouTube (and many more).
 * Music identification using `AcoustID` and `MusicBrainz`. No need to rename or edit tags of your files manually.
