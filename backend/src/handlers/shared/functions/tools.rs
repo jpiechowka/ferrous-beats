@@ -94,8 +94,8 @@ pub async fn get_ffmpeg_download_url_and_output_file_name(
             "ffmpeg.tar.xz",
         ),
         "windows" => (
-            "https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-full.7z",
-            "ffmpeg.7z",
+            "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-lgpl.zip",
+            "ffmpeg.zip",
         ),
         "macos" => ("https://evermeet.cx/ffmpeg/ffmpeg-7.0.2.7z", "ffmpeg.7z"),
         os => anyhow::bail!("Unsupported operating system: {}", os),

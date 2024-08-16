@@ -1,4 +1,5 @@
 use crate::handlers::errors::ServerError;
+use crate::handlers::shared::functions::files::decompress_file;
 use crate::handlers::shared::functions::tools::get_chromaprint_download_url_and_output_file_name;
 use crate::handlers::shared::model::responses::ToolDownloadResponse;
 use crate::AppState;
@@ -46,9 +47,13 @@ pub async fn handle_chromaprint_download(
         .await
         .context("Failed to write chromaprint file")?;
 
-    info!("chromaprint downloaded successfully");
+    info!("Chromaprint downloaded successfully");
+    info!("Extracting the archive");
+    decompress_file(&download_file_path, &download_dir.to_path_buf())
+        .await
+        .context("Failed to extract chromaprint archive")?;
 
-    // TODO extract chromaprint from archive
+    // TODO: Move file to the correct location
 
     Ok((
         StatusCode::OK,
