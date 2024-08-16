@@ -14,7 +14,7 @@ pub struct Config {
 pub struct ServerSettings {
     pub port: u16,
     pub host: String,
-    pub dlp_download_dir: String,
+    pub tools_download_dir: String,
 }
 
 #[derive(Debug, Clone)]
@@ -53,7 +53,7 @@ pub fn cli_to_config(
     let server_settings = ServerSettings {
         port: run_command.port,
         host: run_command.host.clone(),
-        dlp_download_dir: run_command.dlp_download_dir.clone(),
+        tools_download_dir: run_command.tools_download_dir.clone(),
     };
 
     let library_settings = LibrarySettings {

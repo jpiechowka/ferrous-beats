@@ -41,7 +41,7 @@ pub async fn handle_yt_dlp_status(
         },
         Json(YtDlpStatusResponse {
             executable_version: if command_execution_result.command_completed_successfully {
-                Some(parse_version(&command_execution_result.stdout))
+                Some(parse_yt_dlp_version(&command_execution_result.stdout))
             } else {
                 None
             },
@@ -52,7 +52,7 @@ pub async fn handle_yt_dlp_status(
 }
 
 #[instrument]
-fn parse_version(version_string: &Option<String>) -> String {
+fn parse_yt_dlp_version(version_string: &Option<String>) -> String {
     debug!("Parsing yt-dlp version");
     match version_string {
         None => String::from("could not parse version"),

@@ -7,9 +7,10 @@ use crate::config::Config;
 use crate::handlers::download::audio::handle_audio_download;
 use crate::handlers::download::video::handle_video_download;
 use crate::handlers::index::handle_api_hello;
-use crate::handlers::yt_dlp::download::handle_yt_dlp_download;
-use crate::handlers::yt_dlp::status::handle_yt_dlp_status;
-use crate::handlers::yt_dlp::update::handle_yt_dlp_update;
+use crate::handlers::tools::ffmpeg::download::handle_ffmpeg_download;
+use crate::handlers::tools::yt_dlp::download::handle_yt_dlp_download;
+use crate::handlers::tools::yt_dlp::status::handle_yt_dlp_status;
+use crate::handlers::tools::yt_dlp::update::handle_yt_dlp_update;
 use anyhow::Context;
 use axum::http::header;
 use axum::routing::{get, post};
@@ -66,9 +67,16 @@ async fn main() -> anyhow::Result<()> {
                 .route("/", get(handle_api_hello))
                 .route("/download/audio", post(handle_audio_download))
                 .route("/download/video", post(handle_video_download))
-                .route("/yt-dlp/download", post(handle_yt_dlp_download))
-                .route("/yt-dlp/status", post(handle_yt_dlp_status))
-                .route("/yt-dlp/update", post(handle_yt_dlp_update))
+                // yt-dlp routes
+                .route("/tools/yt-dlp/download", post(handle_yt_dlp_download))
+                .route("/tools/yt-dlp/status", post(handle_yt_dlp_status))
+                .route("/tools/yt-dlp/update", post(handle_yt_dlp_update))
+                // ffmpeg routes
+                .route("/tools/ffmpeg/download", post(handle_ffmpeg_download))
+                // .route("/tools/ffmpeg/status", post())
+                // chromaprint routes
+                // .route("/tools/chromaprint/download", post())
+                // .route("/tools/chromaprint/status", post())
                 .layer(tower_http::catch_panic::CatchPanicLayer::new())
                 .layer(trace_layer)
                 .layer(CompressionLayer::new())

@@ -28,9 +28,9 @@ pub struct RunCommand {
     /// Your file library directory
     #[arg(short = 'l', long = "library-dir", default_value = "library")]
     pub library_dir: String,
-    /// Download directory for yt-dlp (A feature-rich command-line audio/video downloader)
-    #[arg(short = 'y', long = "yt-dlp-download-dir", default_value = "yt-dlp")]
-    pub dlp_download_dir: String,
+    /// Download directory for all the used tools (yt-dlp, ffmpeg, chromparint)
+    #[arg(short = 't', long = "tools-download-dir", default_value = "tools")]
+    pub tools_download_dir: String,
     /// Download directory for audio files. They will be moved to library directory after successful download
     #[arg(
         short = 'a',

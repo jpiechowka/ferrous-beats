@@ -25,8 +25,7 @@ pub async fn handle_yt_dlp_download(
 
     let http_client = Client::new();
     let os = std::env::consts::OS;
-
-    let download_url = get_download_url(os).await?;
+    let (download_url, output_file_name) = get_yt_dlp_download_url_and_output_file_name(os).await?;
 
     info!("Downloading yt-dlp from {}", download_url);
 
@@ -38,17 +37,13 @@ pub async fn handle_yt_dlp_download(
 
     let content = resp.bytes().await.context("Failed to read response body")?;
 
-    let download_dir = Path::new(&app_state.config.server_settings.dlp_download_dir);
+    let download_dir = Path::new(&app_state.config.server_settings.tools_download_dir);
     create_dir_all(download_dir)
         .await
         .context("Failed to create download directory for yt-dlp")?;
 
-    let file_path = download_dir.join(if os == "windows" {
-        "yt-dlp.exe"
-    } else {
-        "yt-dlp"
-    });
-    let mut file = File::create_new(file_path.clone())
+    let download_file_path = download_dir.join(output_file_name);
+    let mut file = File::create_new(&download_file_path)
         .await
         .context("Failed to create new yt-dlp file")?;
     copy(&mut content.as_ref(), &mut file)
@@ -58,37 +53,37 @@ pub async fn handle_yt_dlp_download(
     info!("yt-dlp downloaded successfully");
 
     #[cfg(not(target_os = "windows"))]
-    {
-        use std::os::unix::fs::PermissionsExt;
-
-        info!("Setting executable permissions for the file");
-
-        let mut perms = file
-            .metadata()
-            .await
-            .context("Failed to get yt-dlp metadata")?
-            .permissions();
-        perms.set_mode(0o755);
-        file.set_permissions(perms)
-            .await
-            .context("Failed to set executable permissions for yt-dlp")?;
-    }
+    set_executable_permissions(&file)
+        .await
+        .context("Failed to set yt-dlp executable permissions")?;
 
     Ok((
         StatusCode::OK,
         Json(YtDlpDownloadResponse {
             download_url: download_url.to_string(),
-            path_on_disk: file_path.to_string_lossy().to_string(),
+            path_on_disk: download_file_path.to_string_lossy().to_string(),
         }),
     ))
 }
 
 #[instrument(err)]
-async fn get_download_url(os: &str) -> Result<&str, anyhow::Error> {
+async fn get_yt_dlp_download_url_and_output_file_name(
+    os: &str,
+) -> Result<(&str, &str), anyhow::Error> {
+    // https://github.com/yt-dlp/yt-dlp/releases
     let url = match os {
-        "linux" => "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp",
-        "windows" => "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe",
-        "macos" => "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos",
+        "linux" => (
+            "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp",
+            "yt-dlp",
+        ),
+        "windows" => (
+            "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe",
+            "yt-dlp.exe",
+        ),
+        "macos" => (
+            "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos",
+            "yt-dlp",
+        ),
         os => anyhow::bail!("Unsupported operating system: {}", os),
     };
 
