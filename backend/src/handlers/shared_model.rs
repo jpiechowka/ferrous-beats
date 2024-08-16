@@ -1,5 +1,14 @@
 use serde::Serialize;
 
+/// Represents the response for a successful tool download operation.
+#[derive(Debug, Serialize)]
+pub struct ToolDownloadResponse {
+    /// The URL from which the tool was downloaded.
+    pub download_url: String,
+    /// The local file system path where the downloaded tool is stored.
+    pub path_on_disk: String,
+}
+
 /// Represents the results of executing a command.
 #[derive(Debug, Serialize)]
 pub struct CommandExecutionResults {

@@ -1,26 +1,20 @@
 use crate::handlers::errors::ServerError;
+use crate::handlers::shared_model::ToolDownloadResponse;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::Json;
 use reqwest::Client;
-use serde::Serialize;
 use std::path::Path;
 use tokio::fs::{create_dir_all, File};
 use tokio::io::copy;
 use tracing::{debug, info, instrument};
 
-#[derive(Debug, Serialize)]
-pub struct YtDlpDownloadResponse {
-    download_url: String,
-    path_on_disk: String,
-}
-
 #[instrument(err, skip(app_state))]
 pub async fn handle_yt_dlp_download(
     State(app_state): State<AppState>,
-) -> Result<(StatusCode, Json<YtDlpDownloadResponse>), ServerError> {
+) -> Result<(StatusCode, Json<ToolDownloadResponse>), ServerError> {
     debug!("Handling downloading of yt-dlp from GitHub");
 
     let http_client = Client::new();
@@ -59,7 +53,7 @@ pub async fn handle_yt_dlp_download(
 
     Ok((
         StatusCode::OK,
-        Json(YtDlpDownloadResponse {
+        Json(ToolDownloadResponse {
             download_url: download_url.to_string(),
             path_on_disk: download_file_path.to_string_lossy().to_string(),
         }),

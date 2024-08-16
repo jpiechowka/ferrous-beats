@@ -1,26 +1,20 @@
 use crate::handlers::errors::ServerError;
+use crate::handlers::shared_model::ToolDownloadResponse;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::Json;
 use reqwest::Client;
-use serde::Serialize;
 use std::path::Path;
 use tokio::fs::{create_dir_all, File};
 use tokio::io::copy;
 use tracing::{debug, info, instrument};
 
-#[derive(Debug, Serialize)]
-pub struct FfmpegDownloadResponse {
-    download_url: String,
-    path_on_disk: String,
-}
-
 #[instrument(err, skip(app_state))]
 pub async fn handle_ffmpeg_download(
     State(app_state): State<AppState>,
-) -> Result<(StatusCode, Json<FfmpegDownloadResponse>), ServerError> {
+) -> Result<(StatusCode, Json<ToolDownloadResponse>), ServerError> {
     debug!("Handling downloading of ffmpeg");
 
     let http_client = Client::new();
@@ -57,7 +51,7 @@ pub async fn handle_ffmpeg_download(
 
     Ok((
         StatusCode::OK,
-        Json(FfmpegDownloadResponse {
+        Json(ToolDownloadResponse {
             download_url: download_url.to_string(),
             path_on_disk: download_file_path.to_string_lossy().to_string(),
         }),
