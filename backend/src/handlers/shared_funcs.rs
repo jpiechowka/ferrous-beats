@@ -34,12 +34,12 @@ pub async fn run_command(
 
     let stdout = String::from_utf8_lossy(&command_output.stdout).to_string();
     let stderr = String::from_utf8_lossy(&command_output.stderr).to_string();
-    let exit_status = command_output.status.code();
-    let command_completed_successfully = exit_status.map_or(false, |code| code == 0);
+    let exit_code = command_output.status.code();
+    let command_completed_successfully = exit_code.map_or(false, |code| code == 0);
 
     Ok(CommandExecutionResults {
         command_completed_successfully,
-        exit_status,
+        exit_code,
         stdout: if stdout.is_empty() {
             None
         } else {
