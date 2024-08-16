@@ -10,7 +10,7 @@ A few main features:
 * Allows easy download of tools like: `yt-dlp`, `ffmpeg` and `chromaprint`. No need to install anything.
 * Audio / video downloads from multiple services using `yt-dlp`. You can download your favourite songs from YouTube (and many more).
 * Music identification using `AcoustID` and `MusicBrainz`. No need to rename or edit tags of your files manually.
-* Extensive tagging support for your files.
+* Extensive labeling support for your files.
 * Conversion of files using `ffmpeg`.
 * TODO
 
