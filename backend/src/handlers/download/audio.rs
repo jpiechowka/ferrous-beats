@@ -1,4 +1,5 @@
 use crate::handlers::errors::ServerError;
+use crate::handlers::shared_funcs::{get_yt_dlp_executable_path, run_command};
 use crate::handlers::shared_model::CommandExecutionResults;
 use crate::AppState;
 use anyhow::Context;
@@ -7,8 +8,7 @@ use axum::http::StatusCode;
 use axum::Json;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use tokio::fs::{create_dir_all, metadata};
-use tokio::process::Command;
+use tokio::fs::create_dir_all;
 use tracing::{debug, info, instrument};
 
 #[derive(Debug, Deserialize)]
@@ -34,18 +34,9 @@ pub async fn handle_audio_download(
         .await
         .context("Failed to create download directory for audio")?;
 
-    let os = std::env::consts::OS;
-    let dlp_dir = Path::new(&app_state.config.server_settings.dlp_download_dir);
-    let executable_path = dlp_dir.join(if os == "windows" {
-        "yt-dlp.exe"
-    } else {
-        "yt-dlp"
-    });
-
-    // Check if executable exists first
-    metadata(&executable_path)
+    let yt_dlp_executable_path = get_yt_dlp_executable_path(&app_state)
         .await
-        .context("Failed to get metadata of yt-dlp executable")?;
+        .context("Failed to get yt-dlp executable path")?;
 
     info!("Downloading audio using yt-dlp");
 
@@ -57,42 +48,36 @@ pub async fn handle_audio_download(
         .to_string_lossy()
         .to_string();
 
-    info!("Using output path: {}", output_path_str);
+    info!("Using output path: {:?}", output_path_str);
 
     // TODO: for now it requires ffmpeg to be installed
-    let command_output = Command::new(&executable_path)
-        .arg("-x")
-        .arg(&payload.audio_url)
-        .arg("-o")
-        .arg(output_path_str)
-        .arg("--no-progress")
-        .output()
-        .await
-        .context("Failed to download audio using yt-dlp")?;
 
-    let stdout = String::from_utf8_lossy(&command_output.stdout).to_string();
-    let stderr = String::from_utf8_lossy(&command_output.stderr).to_string();
-    let exit_status = command_output.status.code();
-    let command_completed_successfully = exit_status.map_or(false, |code| code == 0);
+    let command_execution_result = run_command(
+        &yt_dlp_executable_path,
+        &[
+            "-x",
+            &payload.audio_url,
+            "-o",
+            &output_path_str,
+            "--no-progress",
+        ],
+    )
+    .await
+    .context("Failed to download audio using yt-dlp")?;
 
     info!("yt-dlp audio download command was executed");
 
     // TODO: Implement moving files to the library directory if successful
 
     Ok((
-        if command_completed_successfully {
+        if command_execution_result.command_completed_successfully {
             StatusCode::OK
         } else {
             StatusCode::BAD_REQUEST
         },
         Json(DownloadAudioResponse {
             requested_url: payload.audio_url,
-            download_audio_command_results: CommandExecutionResults {
-                command_completed_successfully,
-                exit_status,
-                stdout: Some(stdout),
-                stderr: Some(stderr),
-            },
+            download_audio_command_results: command_execution_result,
         }),
     ))
 }

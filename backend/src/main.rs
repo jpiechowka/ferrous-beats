@@ -1,19 +1,6 @@
 mod cli;
 mod config;
-mod handlers {
-    pub mod download {
-        pub mod audio;
-        pub mod video;
-    }
-    pub mod yt_dlp {
-        pub mod download;
-        pub mod status;
-        pub mod update;
-    }
-    pub mod errors;
-    pub mod index;
-    pub mod shared_model;
-}
+mod handlers;
 
 use crate::cli::{Cli, Commands};
 use crate::config::Config;

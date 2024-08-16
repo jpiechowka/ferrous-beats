@@ -1,4 +1,5 @@
 use crate::handlers::errors::ServerError;
+use crate::handlers::shared_funcs::{get_yt_dlp_executable_path, run_command};
 use crate::handlers::shared_model::CommandExecutionResults;
 use crate::AppState;
 use anyhow::Context;
@@ -6,9 +7,6 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::Json;
 use serde::Serialize;
-use std::path::Path;
-use tokio::fs::metadata;
-use tokio::process::Command;
 use tracing::{debug, info, instrument};
 
 #[derive(Debug, Serialize)]
@@ -24,63 +22,40 @@ pub async fn handle_yt_dlp_status(
 ) -> Result<(StatusCode, Json<YtDlpStatusResponse>), ServerError> {
     debug!("Handling checking of yt-dlp status");
 
-    let os = std::env::consts::OS;
-    let dlp_dir = Path::new(&app_state.config.server_settings.dlp_download_dir);
-    let executable_path = dlp_dir.join(if os == "windows" {
-        "yt-dlp.exe"
-    } else {
-        "yt-dlp"
-    });
-
-    // Check if executable exists first
-    metadata(&executable_path)
+    let yt_dlp_executable_path = get_yt_dlp_executable_path(&app_state)
         .await
-        .context("Failed to get metadata of yt-dlp executable")?;
+        .context("Failed to get yt-dlp executable path")?;
 
     info!("Running yt-dlp version command");
-
-    let command_output = Command::new(&executable_path)
-        .arg("--version")
-        .output()
+    let command_execution_result = run_command(&yt_dlp_executable_path, &["--version"])
         .await
         .context("Failed to run yt-dlp version command")?;
-
-    let stdout = String::from_utf8_lossy(&command_output.stdout).to_string();
-    let stderr = String::from_utf8_lossy(&command_output.stderr).to_string();
-    let exit_status = command_output.status.code();
-    let command_completed_successfully = exit_status.map_or(false, |code| code == 0);
 
     info!("yt-dlp version command was executed");
 
     Ok((
-        if command_completed_successfully {
+        if command_execution_result.command_completed_successfully {
             StatusCode::OK
         } else {
             StatusCode::BAD_REQUEST
         },
         Json(YtDlpStatusResponse {
-            executable_version: if command_completed_successfully {
-                Some(parse_version(&stdout))
+            executable_version: if command_execution_result.command_completed_successfully {
+                Some(parse_version(&command_execution_result.stdout))
             } else {
                 None
             },
-            path: executable_path.to_string_lossy().to_string(),
-            version_execution_results: CommandExecutionResults {
-                command_completed_successfully,
-                exit_status,
-                stdout: Some(stdout),
-                stderr: Some(stderr),
-            },
+            path: yt_dlp_executable_path.to_string_lossy().to_string(),
+            version_execution_results: command_execution_result,
         }),
     ))
 }
 
 #[instrument]
-fn parse_version(version_string: &str) -> String {
+fn parse_version(version_string: &Option<String>) -> String {
     debug!("Parsing yt-dlp version");
-    version_string
-        .trim()
-        .chars()
-        .filter(|c| !c.is_control())
-        .collect()
+    match version_string {
+        None => String::from("could not parse version"),
+        Some(ver) => ver.trim().chars().filter(|c| !c.is_control()).collect(),
+    }
 }
