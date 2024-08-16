@@ -1,6 +1,15 @@
+pub mod convert {
+    pub mod audio;
+}
+
 pub mod download {
     pub mod audio;
     pub mod video;
+}
+
+pub mod ffmpeg {
+    pub mod download;
+    pub mod status;
 }
 
 pub mod yt_dlp {
