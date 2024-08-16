@@ -41,8 +41,6 @@ pub async fn handle_yt_dlp_update(
         .await
         .context("Failed to get yt-dlp executable path")?;
 
-    info!("Running yt-dlp update command");
-
     let update_channel_and_tag =
         prepare_update_channel_and_tag(&payload.update_channel.to_string()).await;
     let command_execution_result = run_command(
@@ -51,8 +49,6 @@ pub async fn handle_yt_dlp_update(
     )
     .await
     .context("Failed to run yt-dlp update command")?;
-
-    info!("yt-dlp update command was executed");
 
     Ok((
         if command_execution_result.command_completed_successfully {

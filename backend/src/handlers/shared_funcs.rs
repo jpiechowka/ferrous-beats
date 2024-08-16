@@ -83,3 +83,21 @@ pub async fn get_yt_dlp_executable_path(app_state: &AppState) -> Result<PathBuf,
 
     Ok(canonical_path)
 }
+
+#[instrument(err, skip(app_state))]
+pub async fn get_ffmpeg_executable_path(app_state: &AppState) -> Result<PathBuf, anyhow::Error> {
+    debug!("Getting ffmpeg executable path");
+
+    let os = std::env::consts::OS;
+    let dlp_dir = Path::new(&app_state.config.server_settings.tools_download_dir);
+    let executable_path = dlp_dir.join(if os == "windows" {
+        "ffmpeg.exe"
+    } else {
+        "ffmpeg"
+    });
+    let canonical_path = executable_path
+        .canonicalize()
+        .context("Failed to canonicalize ffmpeg executable path. One of the reasons can be that the executable does not exist")?;
+
+    Ok(canonical_path)
+}

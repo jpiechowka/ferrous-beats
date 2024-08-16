@@ -8,6 +8,7 @@ use crate::handlers::download::audio::handle_audio_download;
 use crate::handlers::download::video::handle_video_download;
 use crate::handlers::index::handle_api_hello;
 use crate::handlers::tools::ffmpeg::download::handle_ffmpeg_download;
+use crate::handlers::tools::ffmpeg::status::handle_ffmpeg_status;
 use crate::handlers::tools::yt_dlp::download::handle_yt_dlp_download;
 use crate::handlers::tools::yt_dlp::status::handle_yt_dlp_status;
 use crate::handlers::tools::yt_dlp::update::handle_yt_dlp_update;
@@ -73,7 +74,7 @@ async fn main() -> anyhow::Result<()> {
                 .route("/tools/yt-dlp/update", post(handle_yt_dlp_update))
                 // ffmpeg routes
                 .route("/tools/ffmpeg/download", post(handle_ffmpeg_download))
-                // .route("/tools/ffmpeg/status", post())
+                .route("/tools/ffmpeg/status", post(handle_ffmpeg_status))
                 // chromaprint routes
                 // .route("/tools/chromaprint/download", post())
                 // .route("/tools/chromaprint/status", post())

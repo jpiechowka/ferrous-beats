@@ -50,8 +50,6 @@ pub async fn handle_audio_download(
 
     info!("Using output path: {:?}", output_path_str);
 
-    // TODO: for now it requires ffmpeg to be installed
-
     let command_execution_result = run_command(
         &yt_dlp_executable_path,
         &[

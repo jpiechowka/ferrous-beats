@@ -40,7 +40,7 @@ pub async fn handle_ffmpeg_download(
     let download_dir = Path::new(&app_state.config.server_settings.tools_download_dir);
     create_dir_all(download_dir)
         .await
-        .context("Failed to create download directory for yt-dlp")?;
+        .context("Failed to create download directory for ffmpeg")?;
 
     let download_file_path = download_dir.join(output_file_name);
     let mut file = File::create_new(&download_file_path)
@@ -52,8 +52,8 @@ pub async fn handle_ffmpeg_download(
 
     info!("ffmpeg downloaded successfully");
 
-    // TODO extract ffmpeg
-    // TODO: set permissions
+    // TODO extract ffmpeg from archive
+    // TODO: move files from bin directory to tools directory and update permissions?
 
     Ok((
         StatusCode::OK,

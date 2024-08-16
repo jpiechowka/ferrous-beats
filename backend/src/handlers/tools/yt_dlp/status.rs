@@ -26,12 +26,9 @@ pub async fn handle_yt_dlp_status(
         .await
         .context("Failed to get yt-dlp executable path")?;
 
-    info!("Running yt-dlp version command");
     let command_execution_result = run_command(&yt_dlp_executable_path, &["--version"])
         .await
         .context("Failed to run yt-dlp version command")?;
-
-    info!("yt-dlp version command was executed");
 
     Ok((
         if command_execution_result.command_completed_successfully {
