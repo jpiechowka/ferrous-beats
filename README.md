@@ -1,6 +1,6 @@
-# FerrousBeats
+# Ferrous Beats
 
-Rust music player
+Ferrous Beats is a Rust music player (and many more).
 
 Heavily inspired by this talk by Andrew Kelley (creator of Zig programming language): https://youtu.be/SCLrNqc9jdE
 
