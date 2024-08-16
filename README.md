@@ -2,6 +2,8 @@
 
 Rust music player
 
+Heavily inspired by this talk by Andrew Kelley (creator of Zig programming language): https://youtu.be/SCLrNqc9jdE
+
 ## License
 
 `ferrous-beats` is free, open source and permissively licensed! Except where noted (below and/or in individual files),
