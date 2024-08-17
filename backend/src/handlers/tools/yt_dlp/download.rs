@@ -1,6 +1,6 @@
 use crate::handlers::errors::ServerError;
 use crate::handlers::shared::functions::tools::get_yt_dlp_download_url_and_output_file_name;
-use crate::handlers::shared::model::responses::ToolDownloadResponse;
+use crate::handlers::shared::model::tools::ToolDownloadResponse;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;

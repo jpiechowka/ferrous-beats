@@ -19,8 +19,11 @@ pub mod shared {
     }
 
     pub mod model {
+        pub mod acoustid;
         pub mod commands;
-        pub mod responses;
+        pub mod media;
+        pub mod musicbrainz;
+        pub mod tools;
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::handlers::errors::ServerError;
-use crate::handlers::shared::model::responses::MediaDownloadResponse;
+use crate::handlers::shared::model::media::MediaDownloadResponse;
 use crate::AppState;
 use axum::extract::State;
 use axum::http::StatusCode;

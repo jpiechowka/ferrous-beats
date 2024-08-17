@@ -1,7 +1,7 @@
 use crate::handlers::errors::ServerError;
 use crate::handlers::shared::functions::commands::run_command;
 use crate::handlers::shared::functions::tools::get_ffmpeg_executable_path;
-use crate::handlers::shared::model::responses::ToolStatusResponse;
+use crate::handlers::shared::model::tools::ToolStatusResponse;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;

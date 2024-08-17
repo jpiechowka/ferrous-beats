@@ -3,7 +3,7 @@ use crate::handlers::shared::functions::files::{
     decompress_file, remove_subdirectories_with_prefix, search_and_move_binaries,
 };
 use crate::handlers::shared::functions::tools::get_chromaprint_download_url_and_output_file_name;
-use crate::handlers::shared::model::responses::ToolDownloadResponse;
+use crate::handlers::shared::model::tools::ToolDownloadResponse;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;
