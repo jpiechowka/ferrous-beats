@@ -1,7 +1,7 @@
 use anyhow::Context;
 use std::fs::File;
 use std::path::PathBuf;
-use tokio::fs::{read_dir, rename};
+use tokio::fs::{read_dir, remove_dir_all, rename};
 use tokio::task::spawn_blocking;
 use tracing::{info, instrument};
 use zip::ZipArchive;
@@ -113,6 +113,44 @@ pub async fn search_and_move_binaries(
         );
     } else {
         anyhow::bail!("Moved some binaries but not all required: {}, required number of binaries moved: {}, actual moved: {}",found_binaries.join(", "), minimum_moved_binaries_for_success, found_binaries.len());
+    }
+
+    Ok(())
+}
+
+#[instrument(err, ret(level = "debug"))]
+pub async fn remove_subdirectories_with_prefix(
+    parent_dir: &PathBuf,
+    prefix: &str,
+) -> Result<(), anyhow::Error> {
+    info!("Removing subdirectories with prefix: {}", prefix);
+
+    let prefix_lowercase = prefix.to_lowercase();
+
+    let mut entries = read_dir(parent_dir)
+        .await
+        .context("Failed to read directory entries")?;
+
+    while let Some(entry) = entries
+        .next_entry()
+        .await
+        .context("Failed to read next entry")?
+    {
+        if entry
+            .file_type()
+            .await
+            .context("Failed to get file type")?
+            .is_dir()
+        {
+            if let Some(dir_name) = entry.file_name().to_str() {
+                if dir_name.to_lowercase().starts_with(&prefix_lowercase) {
+                    info!("Removing subdirectory: {}", dir_name);
+                    remove_dir_all(entry.path())
+                        .await
+                        .context(format!("Failed to remove subdirectory: {}", dir_name))?;
+                }
+            }
+        }
     }
 
     Ok(())

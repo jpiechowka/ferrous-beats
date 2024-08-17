@@ -1,5 +1,7 @@
 use crate::handlers::errors::ServerError;
-use crate::handlers::shared::functions::files::{decompress_file, search_and_move_binaries};
+use crate::handlers::shared::functions::files::{
+    decompress_file, remove_subdirectories_with_prefix, search_and_move_binaries,
+};
 use crate::handlers::shared::functions::tools::get_ffmpeg_download_url_and_output_file_name;
 use crate::handlers::shared::model::responses::ToolDownloadResponse;
 use crate::AppState;
@@ -8,7 +10,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::Json;
 use std::path::Path;
-use tokio::fs::{create_dir_all, File};
+use tokio::fs::{create_dir_all, remove_file, File};
 use tokio::io::copy;
 use tracing::{debug, info, instrument};
 
@@ -46,6 +48,7 @@ pub async fn handle_ffmpeg_download(
         .context("Failed to write ffmpeg file")?;
 
     info!("ffmpeg downloaded successfully");
+
     decompress_file(&download_file_path, &download_dir.to_path_buf())
         .await
         .context("Failed to extract ffmpeg archive")?;
@@ -66,14 +69,23 @@ pub async fn handle_ffmpeg_download(
     .await
     .context("Failed to move ffmpeg binaries to the correct location")?;
 
-    // TODO: Remove the downloaded file after successful move and extraction?
+    info!("Deleting downloaded file");
+    remove_file(&download_file_path)
+        .await
+        .context("Failed to delete downloaded file")?;
+
+    info!("Deleting extracted directory");
+    remove_subdirectories_with_prefix(&download_dir.to_path_buf(), "ffmpeg")
+        .await
+        .context("Failed to remove extracted directory")?;
+
     // TODO: Is it required to change file permissions after extraction?
 
     Ok((
         StatusCode::OK,
         Json(ToolDownloadResponse {
             download_url: download_url.to_string(),
-            path_on_disk: download_file_path.to_string_lossy().to_string(),
+            tools_dir_path: download_dir.to_string_lossy().to_string(),
         }),
     ))
 }

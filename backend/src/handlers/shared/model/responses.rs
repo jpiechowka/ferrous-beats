@@ -15,8 +15,8 @@ pub struct MediaDownloadResponse {
 pub struct ToolDownloadResponse {
     /// The URL from which the tool was downloaded.
     pub download_url: String,
-    /// The local file system path where the downloaded tool is stored.
-    pub path_on_disk: String,
+    /// The local file system directory where the downloaded tool is stored.
+    pub tools_dir_path: String,
 }
 
 /// Represents the response for a tool status check operation. This usually will use the version command of the tool to determine its status.

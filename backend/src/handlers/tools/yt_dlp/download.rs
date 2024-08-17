@@ -55,7 +55,7 @@ pub async fn handle_yt_dlp_download(
         StatusCode::OK,
         Json(ToolDownloadResponse {
             download_url: download_url.to_string(),
-            path_on_disk: download_file_path.to_string_lossy().to_string(),
+            tools_dir_path: download_dir.to_string_lossy().to_string(),
         }),
     ))
 }
