@@ -31,7 +31,7 @@ pub struct YtDlpUpdateResponse {
     update_execution_results: CommandExecutionResults,
 }
 
-#[instrument(err, skip(app_state))]
+#[instrument(err, ret(level = "debug"), skip(app_state))]
 pub async fn handle_yt_dlp_update(
     State(app_state): State<AppState>,
     Json(payload): Json<YtDlpUpdateRequest>,

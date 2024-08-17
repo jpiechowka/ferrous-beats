@@ -12,7 +12,7 @@ use tokio::fs::{create_dir_all, rename, File};
 use tokio::io::copy;
 use tracing::{debug, info, instrument};
 
-#[instrument(err, skip(app_state))]
+#[instrument(err, ret(level = "debug"), skip(app_state))]
 pub async fn handle_chromaprint_download(
     State(app_state): State<AppState>,
 ) -> Result<(StatusCode, Json<ToolDownloadResponse>), ServerError> {

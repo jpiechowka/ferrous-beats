@@ -9,7 +9,7 @@ use axum::http::StatusCode;
 use axum::Json;
 use tracing::{debug, instrument};
 
-#[instrument(err, skip(app_state))]
+#[instrument(err, ret(level = "debug"), skip(app_state))]
 pub async fn handle_ffmpeg_status(
     State(app_state): State<AppState>,
 ) -> Result<(StatusCode, Json<ToolStatusResponse>), ServerError> {

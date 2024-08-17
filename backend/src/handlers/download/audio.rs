@@ -17,7 +17,7 @@ pub struct DownloadAudioRequest {
     audio_url: String,
 }
 
-#[instrument(err, skip(app_state))]
+#[instrument(err, ret(level = "debug"), skip(app_state))]
 pub async fn handle_audio_download(
     State(app_state): State<AppState>,
     Json(payload): Json<DownloadAudioRequest>,

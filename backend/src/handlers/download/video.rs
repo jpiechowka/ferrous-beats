@@ -12,7 +12,7 @@ pub struct DownloadVideoRequest {
     video_url: String,
 }
 
-#[instrument(err, skip(app_state))]
+#[instrument(err, ret(level = "debug"), skip(app_state))]
 pub async fn handle_video_download(
     State(app_state): State<AppState>,
     Json(payload): Json<DownloadVideoRequest>,
