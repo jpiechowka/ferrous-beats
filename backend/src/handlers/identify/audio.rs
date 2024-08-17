@@ -40,7 +40,7 @@ pub struct FpcalcFingerprintingResult {
 }
 
 #[instrument(err, ret(level = "debug"), skip(app_state))]
-pub async fn handle_identify_audio(
+pub async fn handle_audio_identification(
     State(app_state): State<AppState>,
     Json(payload): Json<IdentifyAudioRequest>,
 ) -> Result<(StatusCode, Json<IdentifyAudioResponse>), ServerError> {

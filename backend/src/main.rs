@@ -6,9 +6,10 @@ mod handlers;
 use crate::cli::{Cli, Commands};
 use crate::config::Config;
 use crate::doh::CloudflareDoHResolver;
+use crate::handlers::convert::audio::handle_audio_conversion;
 use crate::handlers::download::audio::handle_audio_download;
 use crate::handlers::download::video::handle_video_download;
-use crate::handlers::identify::audio::handle_identify_audio;
+use crate::handlers::identify::audio::handle_audio_identification;
 use crate::handlers::index::handle_api_hello;
 use crate::handlers::tools::chromaprint::download::handle_chromaprint_download;
 use crate::handlers::tools::chromaprint::status::handle_chromaprint_fpcalc_status;
@@ -96,7 +97,8 @@ async fn main() -> anyhow::Result<()> {
                 .route("/", get(handle_api_hello))
                 .route("/download/audio", post(handle_audio_download))
                 .route("/download/video", post(handle_video_download))
-                .route("/identify/audio", post(handle_identify_audio))
+                .route("/identify/audio", post(handle_audio_identification))
+                .route("/convert/audio", post(handle_audio_conversion))
                 // Tools: yt-dlp routes
                 .route("/tools/yt-dlp/download", post(handle_yt_dlp_download))
                 .route("/tools/yt-dlp/status", post(handle_yt_dlp_status))
