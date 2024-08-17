@@ -119,6 +119,57 @@ pub async fn search_and_move_binaries(
 }
 
 #[instrument(err, ret(level = "debug"))]
+pub async fn search_and_move_media_file(
+    source_dir: &PathBuf,
+    destination_dir: &PathBuf,
+    search_prefix: &str,
+    strip_prefix: bool,
+) -> Result<(), anyhow::Error> {
+    info!(
+        "Searching for media file to move with prefix: {}",
+        search_prefix
+    );
+
+    let mut entries = read_dir(source_dir)
+        .await
+        .context("Failed to read directory entries")?;
+
+    while let Some(entry) = entries
+        .next_entry()
+        .await
+        .context("Failed to read next entry")?
+    {
+        let file_name = entry.file_name().to_string_lossy().to_string();
+        if file_name.starts_with(search_prefix) {
+            let source_path = entry.path();
+            let dest_file_name = if strip_prefix {
+                file_name
+                    .strip_prefix(search_prefix)
+                    .context("Failed to strip destination prefix")?
+            } else {
+                &file_name
+            };
+            let dest_path = destination_dir.join(dest_file_name);
+            info!(
+                "Moving media file: {} -> {}",
+                source_path.display(),
+                dest_path.to_string_lossy().to_string()
+            );
+            rename(&source_path, &dest_path)
+                .await
+                .context(format!("Failed to move media file: {}", file_name))?;
+            info!("Media file moved successfully");
+            return Ok(());
+        }
+    }
+
+    anyhow::bail!(
+        "No matching file found that starts with prefix: {}",
+        search_prefix
+    )
+}
+
+#[instrument(err, ret(level = "debug"))]
 pub async fn remove_subdirectories_with_prefix(
     parent_dir: &PathBuf,
     prefix: &str,
