@@ -11,6 +11,7 @@ use axum::http::header::USER_AGENT;
 use axum::http::StatusCode;
 use axum::Json;
 use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
 use tokio::fs::metadata;
 use tracing::{debug, error, info, instrument};
 
@@ -85,9 +86,6 @@ pub async fn handle_identify_audio(
     )
     .context("JSON parsing failed")?;
 
-    // TODO: Fire API request to get MusicBrainz track ID, then details
-    // TODO: Return details to the user
-
     info!("Querying AcoustID API for track identification information");
     let resp = app_state
         .http_client
@@ -97,28 +95,38 @@ pub async fn handle_identify_audio(
             ("meta", "recordingids"),
             (
                 "duration",
+                // TODO: Is trunc here correct?
                 &fingerprinting_result.duration.trunc().to_string(),
-            ), // TODO: Is trunc here correct?
+            ),
             ("fingerprint", &fingerprinting_result.fingerprint),
         ])
         .send()
         .await
         .context("Error sending request to AcoustID API")?;
 
-    // TODO: Check status code and handle errors
-    // TODO: check returned score and handle matches with low scores?
-
+    // TODO: check returned score and handle matches with very low scores?
     let acoustid_response: AcoustIDApiLookupResponse = resp
         .json()
         .await
         .context("Failed to parse AcoustID API response as JSON")?;
 
-    // TODO: Handle multiple IDs?
-    let recording_id = acoustid_response
+    // TODO: Handle multiple IDs better?
+    let best_result = acoustid_response
         .results
+        .iter()
+        .max_by(|a, b| a.score.partial_cmp(&b.score).unwrap_or(Ordering::Equal))
+        .context("No results found in AcoustID API response")?;
+
+    info!(
+        "Best AcoustID match: {} with score {}",
+        best_result.id, best_result.score
+    );
+
+    let recording_id = best_result
+        .recordings
         .first()
-        .and_then(|res| res.recordings.first().map(|rec| &rec.id))
-        .context("No recording ID found in AcoustID API response")?;
+        .map(|rec| &rec.id)
+        .context("No recording ID found in the best AcoustID API result")?;
 
     info!("Querying MusicBrainz API for track identification information");
 
@@ -133,7 +141,7 @@ pub async fn handle_identify_audio(
             MUSICBRAINZ_API_URL, recording_id
         ))
         .header(USER_AGENT, musicbrainz_user_agent)
-        .query(&[("fmt", "json"), ("inc", "artists+releases+isrcs")])
+        .query(&[("fmt", "json"), ("inc", "artists")])
         .send()
         .await
         .context("Error sending request to MusicBrainz API")?;
