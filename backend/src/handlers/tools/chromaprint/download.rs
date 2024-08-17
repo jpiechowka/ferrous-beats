@@ -8,7 +8,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::Json;
 use std::path::Path;
-use tokio::fs::{create_dir_all, rename, File};
+use tokio::fs::{create_dir_all, File};
 use tokio::io::copy;
 use tracing::{debug, info, instrument};
 

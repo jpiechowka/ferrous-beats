@@ -14,6 +14,7 @@ pub struct Config {
 pub struct ServerSettings {
     pub port: u16,
     pub host: String,
+    pub disable_doh: bool,
     pub tools_download_dir: String,
 }
 
@@ -53,6 +54,7 @@ pub fn cli_to_config(
     let server_settings = ServerSettings {
         port: run_command.port,
         host: run_command.host.clone(),
+        disable_doh: run_command.disable_doh,
         tools_download_dir: run_command.tools_download_dir.clone(),
     };
 

@@ -14,6 +14,7 @@ A few main features:
 * Music identification using `AcoustID` and `MusicBrainz`. No need to rename or edit tags of your files manually.
 * Extensive labeling support for your files.
 * Conversion of files using `ffmpeg`.
+* DNS over HTTPS using Cloudflare for some added privacy
 * TODO
 
 ## License

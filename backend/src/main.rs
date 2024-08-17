@@ -1,9 +1,11 @@
 mod cli;
 mod config;
+mod doh;
 mod handlers;
 
 use crate::cli::{Cli, Commands};
 use crate::config::Config;
+use crate::doh::CloudflareDoHResolver;
 use crate::handlers::download::audio::handle_audio_download;
 use crate::handlers::download::video::handle_video_download;
 use crate::handlers::index::handle_api_hello;
@@ -20,6 +22,7 @@ use axum::routing::{get, post};
 use axum::Router;
 use clap::Parser;
 use reqwest::Client;
+use std::sync::Arc;
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::CorsLayer;
 use tower_http::decompression::DecompressionLayer;
@@ -27,7 +30,7 @@ use tower_http::set_header::SetResponseHeaderLayer;
 use tower_http::trace::{
     DefaultMakeSpan, DefaultOnFailure, DefaultOnRequest, DefaultOnResponse, TraceLayer,
 };
-use tracing::{info, Level};
+use tracing::{info, warn, Level};
 use tracing_subscriber::FmtSubscriber;
 
 const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -66,9 +69,21 @@ async fn main() -> anyhow::Result<()> {
                 .on_response(DefaultOnResponse::new().level(Level::DEBUG))
                 .on_failure(DefaultOnFailure::new());
 
-            // TODO: Set up DoH resolver for HTTP client (hickory-dns)
             info!("Creating HTTP client");
-            let http_client = Client::new();
+            let mut http_client_builder = Client::builder();
+
+            if config.server_settings.disable_doh {
+                warn!(
+                    "Disabling DNS over HTTPS (DoH) for HTTP client. This may affect your privacy"
+                );
+            } else {
+                http_client_builder =
+                    http_client_builder.dns_resolver(Arc::new(CloudflareDoHResolver::default()));
+            }
+
+            let http_client = http_client_builder
+                .build()
+                .context("Failed to create HTTP client")?;
 
             let app_state = AppState {
                 config: config.clone(),

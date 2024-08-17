@@ -25,6 +25,9 @@ pub struct RunCommand {
     /// Server host
     #[arg(long = "host", default_value = "127.0.0.1")]
     pub host: String,
+    /// Disable DNS over HTTPS (DoH) for HTTP client. DoH provides some additional privacy compared to plain DNS.
+    #[arg(long = "disable-doh")]
+    pub disable_doh: bool,
     /// Your file library directory
     #[arg(short = 'l', long = "library-dir", default_value = "library")]
     pub library_dir: String,
