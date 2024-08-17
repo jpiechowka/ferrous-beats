@@ -66,6 +66,9 @@ pub async fn handle_ffmpeg_download(
     .await
     .context("Failed to move ffmpeg binaries to the correct location")?;
 
+    // TODO: Remove the downloaded file after successful move and extraction?
+    // TODO: Is it required to change file permissions after extraction?
+
     Ok((
         StatusCode::OK,
         Json(ToolDownloadResponse {
