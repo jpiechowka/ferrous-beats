@@ -1,9 +1,9 @@
 use crate::AppState;
 use anyhow::Context;
 use std::path::{Path, PathBuf};
-use tracing::{debug, instrument};
+use tracing::{debug, info, instrument};
 
-#[instrument(err, skip(app_state))]
+#[instrument(err, ret(level = "debug"), skip(app_state))]
 pub async fn get_yt_dlp_executable_path(app_state: &AppState) -> Result<PathBuf, anyhow::Error> {
     debug!("Getting yt-dlp executable path");
 
@@ -21,7 +21,7 @@ pub async fn get_yt_dlp_executable_path(app_state: &AppState) -> Result<PathBuf,
     Ok(canonical_path)
 }
 
-#[instrument(err, skip(app_state))]
+#[instrument(err, ret(level = "debug"), skip(app_state))]
 pub async fn get_ffmpeg_executable_path(app_state: &AppState) -> Result<PathBuf, anyhow::Error> {
     debug!("Getting ffmpeg executable path");
 
@@ -39,7 +39,7 @@ pub async fn get_ffmpeg_executable_path(app_state: &AppState) -> Result<PathBuf,
     Ok(canonical_path)
 }
 
-#[instrument(err, skip(app_state))]
+#[instrument(err, ret(level = "debug"), skip(app_state))]
 pub async fn get_chromaprint_fpcalc_executable_path(
     app_state: &AppState,
 ) -> Result<PathBuf, anyhow::Error> {
@@ -59,11 +59,12 @@ pub async fn get_chromaprint_fpcalc_executable_path(
     Ok(canonical_path)
 }
 
-#[instrument(err)]
+#[instrument(err, ret(level = "debug"))]
 pub async fn get_yt_dlp_download_url_and_output_file_name(
     os: &str,
 ) -> Result<(&str, &str), anyhow::Error> {
     // https://github.com/yt-dlp/yt-dlp/releases
+    info!("Getting download URL and output file name for yt-dlp");
     let url = match os {
         "linux" => (
             "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp",
@@ -83,11 +84,12 @@ pub async fn get_yt_dlp_download_url_and_output_file_name(
     Ok(url)
 }
 
-#[instrument(err)]
+#[instrument(err, ret(level = "debug"))]
 pub async fn get_ffmpeg_download_url_and_output_file_name(
     os: &str,
 ) -> Result<(&str, &str), anyhow::Error> {
     // https://ffmpeg.org/download.html
+    info!("Getting download URL and output file name for ffmpeg");
     let url = match os {
         "linux" => (
             "https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz",
@@ -104,11 +106,12 @@ pub async fn get_ffmpeg_download_url_and_output_file_name(
     Ok(url)
 }
 
-#[instrument(err)]
+#[instrument(err, ret(level = "debug"))]
 pub async fn get_chromaprint_download_url_and_output_file_name(
     os: &str,
 ) -> Result<(&str, &str), anyhow::Error> {
     // https://acoustid.org/chromaprint
+    info!("Getting download URL and output file name for chromaprint");
     let url = match os {
         "linux" => (
             "https://github.com/acoustid/chromaprint/releases/download/v1.5.1/chromaprint-fpcalc-1.5.1-linux-x86_64.tar.gz",

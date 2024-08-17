@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use tokio::process::Command;
 use tracing::{error, info, instrument};
 
-#[instrument(err)]
+#[instrument(err, ret(level = "debug"))]
 pub async fn run_command(
     executable_path: &PathBuf,
     args: &[&str],

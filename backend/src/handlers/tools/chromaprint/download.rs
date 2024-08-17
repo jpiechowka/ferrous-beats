@@ -1,5 +1,5 @@
 use crate::handlers::errors::ServerError;
-use crate::handlers::shared::functions::files::decompress_file;
+use crate::handlers::shared::functions::files::{decompress_file, search_and_move_binaries};
 use crate::handlers::shared::functions::tools::get_chromaprint_download_url_and_output_file_name;
 use crate::handlers::shared::model::responses::ToolDownloadResponse;
 use crate::AppState;
@@ -7,8 +7,8 @@ use anyhow::Context;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::Json;
-use std::path::{Path, PathBuf};
-use tokio::fs::{create_dir_all, read_dir, rename, File};
+use std::path::Path;
+use tokio::fs::{create_dir_all, rename, File};
 use tokio::io::copy;
 use tracing::{debug, info, instrument};
 
@@ -51,9 +51,14 @@ pub async fn handle_chromaprint_download(
         .await
         .context("Failed to extract chromaprint archive")?;
 
-    move_fpcalc_binary_to_the_correct_location(&download_dir.to_path_buf())
-        .await
-        .context("Failed to move fpcalc binary to the correct location")?;
+    search_and_move_binaries(
+        &download_dir.to_path_buf(),
+        &download_dir.to_path_buf(),
+        &["fpcalc", "fpcalc.exe"],
+        1,
+    )
+    .await
+    .context("Failed to move fpcalc binary to the correct location")?;
 
     Ok((
         StatusCode::OK,
@@ -62,60 +67,4 @@ pub async fn handle_chromaprint_download(
             path_on_disk: download_file_path.to_string_lossy().to_string(),
         }),
     ))
-}
-
-#[instrument(err)]
-async fn move_fpcalc_binary_to_the_correct_location(
-    download_dir: &PathBuf,
-) -> Result<(), anyhow::Error> {
-    info!("Moving fpcalc binary to the correct location");
-
-    let mut entries = read_dir(download_dir)
-        .await
-        .context("Failed to read download directory entries")?;
-
-    while let Some(entry) = entries
-        .next_entry()
-        .await
-        .context("Failed to read next entry")?
-    {
-        if entry
-            .file_type()
-            .await
-            .context("Failed to get file type")?
-            .is_dir()
-        {
-            if let Ok(()) = search_and_move_fpcalc(&entry.path(), download_dir).await {
-                return Ok(());
-            }
-        }
-    }
-
-    anyhow::bail!("Unable to find fpcalc binary in any subdirectory")
-}
-
-#[instrument(err)]
-async fn search_and_move_fpcalc(dir: &PathBuf, destination: &PathBuf) -> Result<(), anyhow::Error> {
-    let mut entries = read_dir(dir)
-        .await
-        .context("Failed to read directory entries")?;
-
-    while let Some(entry) = entries
-        .next_entry()
-        .await
-        .context("Failed to read next entry")?
-    {
-        let file_name = entry.file_name();
-        if file_name == "fpcalc" || file_name == "fpcalc.exe" {
-            let source = entry.path();
-            let dest = destination.join(file_name);
-            rename(&source, &dest)
-                .await
-                .context("Failed to move fpcalc binary")?;
-            info!("fpcalc binary moved successfully");
-            return Ok(());
-        }
-    }
-
-    anyhow::bail!("fpcalc not found in this directory")
 }

@@ -1,4 +1,5 @@
 use crate::handlers::errors::ServerError;
+use crate::handlers::shared::functions::files::{decompress_file, search_and_move_binaries};
 use crate::handlers::shared::functions::tools::get_ffmpeg_download_url_and_output_file_name;
 use crate::handlers::shared::model::responses::ToolDownloadResponse;
 use crate::AppState;
@@ -45,9 +46,25 @@ pub async fn handle_ffmpeg_download(
         .context("Failed to write ffmpeg file")?;
 
     info!("ffmpeg downloaded successfully");
+    decompress_file(&download_file_path, &download_dir.to_path_buf())
+        .await
+        .context("Failed to extract ffmpeg archive")?;
 
-    // TODO extract ffmpeg from archive
-    // TODO: move files from bin directory to tools directory and update permissions?
+    search_and_move_binaries(
+        &download_dir.to_path_buf(),
+        &download_dir.to_path_buf(),
+        &[
+            "ffmpeg",
+            "ffplay",
+            "ffprobe",
+            "ffmpeg.exe",
+            "ffplay.exe",
+            "ffprobe.exe",
+        ],
+        3,
+    )
+    .await
+    .context("Failed to move ffmpeg binaries to the correct location")?;
 
     Ok((
         StatusCode::OK,
