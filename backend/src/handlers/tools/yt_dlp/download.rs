@@ -6,7 +6,6 @@ use anyhow::Context;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::Json;
-use reqwest::Client;
 use std::path::Path;
 use tokio::fs::{create_dir_all, File};
 use tokio::io::copy;
@@ -18,13 +17,13 @@ pub async fn handle_yt_dlp_download(
 ) -> Result<(StatusCode, Json<ToolDownloadResponse>), ServerError> {
     debug!("Handling downloading of yt-dlp from GitHub");
 
-    let http_client = Client::new();
     let os = std::env::consts::OS;
     let (download_url, output_file_name) = get_yt_dlp_download_url_and_output_file_name(os).await?;
 
     info!("Downloading yt-dlp from {}", download_url);
 
-    let resp = http_client
+    let resp = app_state
+        .http_client
         .get(download_url)
         .send()
         .await

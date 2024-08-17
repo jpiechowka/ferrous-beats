@@ -19,6 +19,7 @@ use axum::http::header;
 use axum::routing::{get, post};
 use axum::Router;
 use clap::Parser;
+use reqwest::Client;
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::CorsLayer;
 use tower_http::decompression::DecompressionLayer;
@@ -34,6 +35,7 @@ const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 #[derive(Debug, Clone)]
 struct AppState {
     config: Config,
+    http_client: Client,
 }
 
 #[tokio::main]
@@ -56,16 +58,24 @@ async fn main() -> anyhow::Result<()> {
             tracing::subscriber::set_global_default(tracing_subscriber)
                 .context("Failed to set global default tracing subscriber")?;
 
+            info!("Parsed app config and set up tracing");
+
             let trace_layer = TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().include_headers(false))
                 .on_request(DefaultOnRequest::new().level(Level::DEBUG))
                 .on_response(DefaultOnResponse::new().level(Level::DEBUG))
                 .on_failure(DefaultOnFailure::new());
 
+            // TODO: Set up DoH resolver for HTTP client (hickory-dns)
+            info!("Creating HTTP client");
+            let http_client = Client::new();
+
             let app_state = AppState {
                 config: config.clone(),
+                http_client,
             };
 
+            info!("Setting up routes and middleware");
             let app = Router::new()
                 .route("/", get(handle_api_hello))
                 .route("/download/audio", post(handle_audio_download))
@@ -134,7 +144,10 @@ async fn main() -> anyhow::Result<()> {
                     &bind_addr
                 ))?;
 
-            info!("Ferrous Beats API is starting on {}", &bind_addr);
+            info!(
+                "Ferrous Beats API version {} is starting on {}",
+                APP_VERSION, &bind_addr
+            );
 
             axum::serve(listener, app)
                 .await

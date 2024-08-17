@@ -7,7 +7,6 @@ use anyhow::Context;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::Json;
-use reqwest::Client;
 use std::path::{Path, PathBuf};
 use tokio::fs::{create_dir_all, read_dir, rename, File};
 use tokio::io::copy;
@@ -19,14 +18,14 @@ pub async fn handle_chromaprint_download(
 ) -> Result<(StatusCode, Json<ToolDownloadResponse>), ServerError> {
     debug!("Handling downloading of chromaprint");
 
-    let http_client = Client::new();
     let os = std::env::consts::OS;
     let (download_url, output_file_name) =
         get_chromaprint_download_url_and_output_file_name(os).await?;
 
     info!("Downloading chromaprint from {}", download_url);
 
-    let resp = http_client
+    let resp = app_state
+        .http_client
         .get(download_url)
         .send()
         .await
