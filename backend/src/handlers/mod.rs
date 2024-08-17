@@ -7,6 +7,10 @@ pub mod download {
     pub mod video;
 }
 
+pub mod identify {
+    pub mod audio;
+}
+
 pub mod shared {
     pub mod functions {
         pub mod commands;

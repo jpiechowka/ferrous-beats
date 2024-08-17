@@ -8,6 +8,7 @@ use crate::config::Config;
 use crate::doh::CloudflareDoHResolver;
 use crate::handlers::download::audio::handle_audio_download;
 use crate::handlers::download::video::handle_video_download;
+use crate::handlers::identify::audio::handle_identify_audio;
 use crate::handlers::index::handle_api_hello;
 use crate::handlers::tools::chromaprint::download::handle_chromaprint_download;
 use crate::handlers::tools::chromaprint::status::handle_chromaprint_fpcalc_status;
@@ -95,14 +96,15 @@ async fn main() -> anyhow::Result<()> {
                 .route("/", get(handle_api_hello))
                 .route("/download/audio", post(handle_audio_download))
                 .route("/download/video", post(handle_video_download))
-                // yt-dlp routes
+                .route("/identify/audio", post(handle_identify_audio))
+                // Tools: yt-dlp routes
                 .route("/tools/yt-dlp/download", post(handle_yt_dlp_download))
                 .route("/tools/yt-dlp/status", post(handle_yt_dlp_status))
                 .route("/tools/yt-dlp/update", post(handle_yt_dlp_update))
-                // ffmpeg routes
+                // Tools: ffmpeg routes
                 .route("/tools/ffmpeg/download", post(handle_ffmpeg_download))
                 .route("/tools/ffmpeg/status", post(handle_ffmpeg_status))
-                // chromaprint routes
+                // Tools: chromaprint routes
                 .route(
                     "/tools/chromaprint/download",
                     post(handle_chromaprint_download),
