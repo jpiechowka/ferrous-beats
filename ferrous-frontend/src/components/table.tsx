@@ -1,38 +1,47 @@
 'use client'
 
-import React from "react";
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
+import React, {useEffect, useState} from "react";
+import {Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from "@nextui-org/table";
+import {Card, CardBody} from "@nextui-org/card";
+import {Divider} from "@nextui-org/divider";
 
-export default function FerrousTable() {
+export default function MusicLibraryTable() {
+    const [libraryPath, setLibraryPath] = useState<string>("");
+    const [libraryContents, setLibraryContent] = useState<string[]>([]);
+
+    useEffect(() => {
+        fetch('http://localhost:13337/library/list')
+            .then(response => response.json())
+            .then(data => {
+                setLibraryPath(data.library_dir);
+                setLibraryContent(data.files);
+            })
+            .catch(error => console.error('Error fetching library list:', error));
+    }, []);
+
     return (
-        <Table isStriped aria-label="Example static collection table">
-            <TableHeader>
-                <TableColumn>NAME</TableColumn>
-                <TableColumn>ROLE</TableColumn>
-                <TableColumn>STATUS</TableColumn>
-            </TableHeader>
-            <TableBody>
-                <TableRow key="1">
-                    <TableCell>Tony Reichert</TableCell>
-                    <TableCell>CEO</TableCell>
-                    <TableCell>Active</TableCell>
-                </TableRow>
-                <TableRow key="2">
-                    <TableCell>Zoey Lang</TableCell>
-                    <TableCell>Technical Lead</TableCell>
-                    <TableCell>Paused</TableCell>
-                </TableRow>
-                <TableRow key="3">
-                    <TableCell>Jane Fisher</TableCell>
-                    <TableCell>Senior Developer</TableCell>
-                    <TableCell>Active</TableCell>
-                </TableRow>
-                <TableRow key="4">
-                    <TableCell>William Howard</TableCell>
-                    <TableCell>Community Manager</TableCell>
-                    <TableCell>Vacation</TableCell>
-                </TableRow>
-            </TableBody>
-        </Table>
+        <>
+            <Card className="my-4">
+                <CardBody>
+                    <h2 className="font-semibold">Local library path: {libraryPath}</h2>
+                </CardBody>
+            </Card>
+
+            <Divider className="my-4"/>
+
+            <Table isStriped aria-label="Music library table">
+                <TableHeader>
+                    <TableColumn>File Name</TableColumn>
+                </TableHeader>
+                <TableBody>
+                    {libraryContents.map((file, index) => (
+                        <TableRow key={index}>
+                            <TableCell>{file}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </>
+
     );
 }
