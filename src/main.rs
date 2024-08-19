@@ -11,6 +11,7 @@ use crate::handlers::download::audio::handle_audio_download;
 use crate::handlers::download::video::handle_video_download;
 use crate::handlers::identify::audio::handle_audio_identification;
 use crate::handlers::index::handle_api_hello;
+use crate::handlers::stream::audio::handle_stream_audio;
 use crate::handlers::tools::chromaprint::download::handle_chromaprint_download;
 use crate::handlers::tools::chromaprint::status::handle_chromaprint_fpcalc_status;
 use crate::handlers::tools::ffmpeg::download::handle_ffmpeg_download;
@@ -32,7 +33,7 @@ use tower_http::set_header::SetResponseHeaderLayer;
 use tower_http::trace::{
     DefaultMakeSpan, DefaultOnFailure, DefaultOnRequest, DefaultOnResponse, TraceLayer,
 };
-use tracing::{info, warn, Level};
+use tracing::{debug, info, warn, Level};
 use tracing_subscriber::FmtSubscriber;
 
 const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -64,6 +65,9 @@ async fn main() -> anyhow::Result<()> {
                 .context("Failed to set global default tracing subscriber")?;
 
             info!("Parsed app config and set up tracing");
+            if cli.verbose {
+                info!("Running in verbose mode. Debug logs enabled");
+            }
 
             let trace_layer = TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().include_headers(false))
@@ -95,6 +99,7 @@ async fn main() -> anyhow::Result<()> {
             info!("Setting up routes and middleware");
             let app = Router::new()
                 .route("/", get(handle_api_hello))
+                .route("/play/:library_file_name", get(handle_stream_audio))
                 .route("/download/audio", post(handle_audio_download))
                 .route("/download/video", post(handle_video_download))
                 .route("/identify/audio", post(handle_audio_identification))
@@ -167,6 +172,8 @@ async fn main() -> anyhow::Result<()> {
                 "Ferrous Beats API version {} is starting on {}",
                 APP_VERSION, &bind_addr
             );
+
+            debug!("Axum router state: {:#?}", app);
 
             axum::serve(listener, app)
                 .await

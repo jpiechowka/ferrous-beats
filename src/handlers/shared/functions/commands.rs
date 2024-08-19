@@ -20,7 +20,7 @@ pub async fn run_command(
     if command_completed_successfully {
         info!("Command completed successfully");
     } else {
-        error!("Command failed with exit code: {:?}", exit_code);
+        error!("Command failed with exit code: {:#?}", exit_code);
     }
 
     Ok(CommandExecutionResults {

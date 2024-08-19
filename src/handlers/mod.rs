@@ -27,6 +27,10 @@ pub mod shared {
     }
 }
 
+pub mod stream {
+    pub mod audio;
+}
+
 pub mod tools {
     pub mod chromaprint {
         pub mod download;

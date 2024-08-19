@@ -50,7 +50,7 @@ pub async fn handle_audio_download(
         .to_string_lossy()
         .to_string();
 
-    info!("Using output path: {:?}", output_path_str);
+    info!("Using output path: {:#?}", output_path_str);
 
     let command_execution_results = run_command(
         &yt_dlp_executable_path,
