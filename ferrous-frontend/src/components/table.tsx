@@ -1,7 +1,7 @@
 'use client'
 
 import React from "react";
-import {Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from "@nextui-org/table";
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 
 export default function FerrousTable() {
     return (
