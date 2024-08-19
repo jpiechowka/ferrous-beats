@@ -11,7 +11,8 @@ use crate::handlers::download::audio::handle_audio_download;
 use crate::handlers::download::video::handle_video_download;
 use crate::handlers::identify::audio::handle_audio_identification;
 use crate::handlers::index::handle_api_hello;
-use crate::handlers::stream::audio::handle_stream_audio;
+use crate::handlers::library::list::handle_list_library_files;
+use crate::handlers::library::play::handle_play_audio;
 use crate::handlers::tools::chromaprint::download::handle_chromaprint_download;
 use crate::handlers::tools::chromaprint::status::handle_chromaprint_fpcalc_status;
 use crate::handlers::tools::ffmpeg::download::handle_ffmpeg_download;
@@ -99,7 +100,8 @@ async fn main() -> anyhow::Result<()> {
             info!("Setting up routes and middleware");
             let app = Router::new()
                 .route("/", get(handle_api_hello))
-                .route("/play/:library_file_name", get(handle_stream_audio))
+                .route("/library/list", get(handle_list_library_files))
+                .route("/library/play/:library_file_name", get(handle_play_audio))
                 .route("/download/audio", post(handle_audio_download))
                 .route("/download/video", post(handle_video_download))
                 .route("/identify/audio", post(handle_audio_identification))

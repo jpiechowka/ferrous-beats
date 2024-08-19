@@ -27,8 +27,9 @@ pub mod shared {
     }
 }
 
-pub mod stream {
-    pub mod audio;
+pub mod library {
+    pub mod list;
+    pub mod play;
 }
 
 pub mod tools {

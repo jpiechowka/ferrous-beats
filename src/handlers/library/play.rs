@@ -2,7 +2,7 @@ use crate::handlers::errors::ServerError;
 use crate::AppState;
 use anyhow::Context;
 use axum::extract::State;
-use axum::http::header::{ACCEPT_RANGES, CONTENT_LENGTH, CONTENT_TYPE};
+use axum::http::header::CONTENT_TYPE;
 use axum::http::StatusCode;
 use axum::response::Response;
 use axum::{body::Body, extract::Path};
@@ -11,16 +11,16 @@ use tokio_util::io::ReaderStream;
 use tracing::{debug, instrument};
 
 #[instrument(err, ret(level = "debug"), skip(app_state))]
-pub async fn handle_stream_audio(
+pub async fn handle_play_audio(
     Path(library_file_name): Path<String>,
     State(app_state): State<AppState>,
 ) -> Result<(StatusCode, Response<Body>), ServerError> {
-    debug!("Handling streaming of music track");
+    debug!("Handling playing of music track");
 
     let library_dir = std::path::Path::new(&app_state.config.library_settings.dir);
     let audio_file_path = library_dir.join(&library_file_name);
 
-    let file_metadata = metadata(&audio_file_path)
+    metadata(&audio_file_path)
         .await
         .context("Failed to get metadata of the audio file. Most likely the path is wrong or the file does not exist")?;
 
