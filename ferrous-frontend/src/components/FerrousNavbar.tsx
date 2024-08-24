@@ -14,35 +14,46 @@ import {Link} from "@nextui-org/link";
 import React, {useState} from "react";
 import {FerrousBeatsLogo} from "@/components/icons/FerrousBeatsLogo";
 import {Tooltip} from "@nextui-org/tooltip";
+import {usePathname} from "next/navigation";
+import NextLink from 'next/link';
 
 export default function FerrousNavbar() {
+    const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const githubMainRepoUrl: string = "https://github.com/jpiechowka/ferrous-beats";
-    const tooltipDelay: number = 500;
+    const tooltipDelayMs: number = 750;
 
     const navbarItems = new Map<string, {
         color: "foreground" | "primary" | "secondary" | "success" | "warning" | "danger",
         href: string,
         tooltipContent: string,
     }>([
-        ["Library", {color: "primary", href: "#", tooltipContent: "View, tag and play files from local music library"}],
+        ["Library", {
+            color: pathname === "/library" ? "primary" : "foreground",
+            href: "/library",
+            tooltipContent: "View, tag and play files from local music library"
+        }],
         ["Downloader", {
-            color: "foreground",
-            href: "#",
+            color: pathname === "/downloader" ? "primary" : "foreground",
+            href: "/downloader",
             tooltipContent: "Download music from different places using yt-dlp"
         }],
         ["Identifier", {
-            color: "foreground",
-            href: "#",
+            color: pathname === "/identifier" ? "primary" : "foreground",
+            href: "/identifier",
             tooltipContent: "Identify music files with Chromparint, AcoustID and MusicBrainz"
         }],
         ["Converter", {
-            color: "foreground",
-            href: "#",
+            color: pathname === "/converter" ? "primary" : "foreground",
+            href: "/converter",
             tooltipContent: "Convert music files to different formats using ffmpeg"
         }],
-        ["Tools", {color: "foreground", href: "#", tooltipContent: "Download, update and manage various tools"}],
+        ["Tools", {
+            color: pathname === "/tools" ? "primary" : "foreground",
+            href: "/tools",
+            tooltipContent: "Download, update and manage various tools"
+        }],
     ]);
 
     const menuItems = new Map<string, {
@@ -51,12 +62,32 @@ export default function FerrousNavbar() {
         target?: string,
         rel?: string
     }>([
-        ["Music Library", {color: "primary", href: "#"}],
-        ["Music Downloader (yt-dlp)", {color: "foreground", href: "#"}],
-        ["Music Identifier", {color: "foreground", href: "#"}],
-        ["Music Converter (ffmpeg)", {color: "foreground", href: "#"}],
-        ["Tools Management", {color: "foreground", href: "#"}],
-        ["Source Code", {color: "secondary", href: githubMainRepoUrl, target: "_blank", rel: "noopener noreferrer"}]
+        ["Music Library", {
+            color: pathname === "/library" ? "primary" : "foreground",
+            href: "/library"
+        }],
+        ["Music Downloader (yt-dlp)", {
+            color: pathname === "/downloader" ? "primary" : "foreground",
+            href: "/downloader"
+        }],
+        ["Music Identifier", {
+            color: pathname === "/identifier" ? "primary" : "foreground",
+            href: "/identifier"
+        }],
+        ["Music Converter (ffmpeg)", {
+            color: pathname === "/converter" ? "primary" : "foreground",
+            href: "/converter"
+        }],
+        ["Tools Management", {
+            color: pathname === "/tools" ? "primary" : "foreground",
+            href: "/tools"
+        }],
+        ["Source Code", {
+            color: "secondary",
+            href: githubMainRepoUrl,
+            target: "_blank",
+            rel: "noopener noreferrer"
+        }]
     ]);
 
     return (
@@ -82,12 +113,13 @@ export default function FerrousNavbar() {
                             showArrow
                             placement="bottom"
                             color={props.color}
-                            delay={tooltipDelay}
+                            delay={tooltipDelayMs}
                         >
                             <Link
                                 key={`navbar-link-${item}-${index}`}
                                 color={props.color}
                                 href={props.href}
+                                as={NextLink}
                                 aria-current={props.color === "primary" ? "page" : undefined}
                             >
                                 {item}
@@ -100,7 +132,7 @@ export default function FerrousNavbar() {
             <NavbarContent justify="end">
                 <NavbarItem className="hidden lg:flex">
                     <Tooltip key="source-code-tooltip" content="View source code on GitHub" showArrow placement="bottom"
-                             color="secondary" delay={tooltipDelay}>
+                             color="secondary" delay={tooltipDelayMs}>
                         <Button as={Link} color="secondary" href={githubMainRepoUrl} target="_blank"
                                 rel="noopener noreferrer" variant="ghost" radius="md">
                             Source Code
@@ -109,7 +141,7 @@ export default function FerrousNavbar() {
                 </NavbarItem>
                 <NavbarItem>
                     <Tooltip key="report-bug-tooltip" content="Report a bug o on GitHub" showArrow placement="bottom"
-                             color="danger" delay={tooltipDelay}>
+                             color="danger" delay={tooltipDelayMs}>
                         <Button as={Link} color="danger" href={githubMainRepoUrl + "/issues"} target="_blank"
                                 rel="noopener noreferrer" variant="ghost" radius="md">
                             Report a Bug
@@ -126,6 +158,7 @@ export default function FerrousNavbar() {
                             color={props.color}
                             className="w-full"
                             href={props.href}
+                            as={NextLink}
                             size="lg"
                             {...(props.target && {target: props.target})}
                             {...(props.rel && {rel: props.rel})}
