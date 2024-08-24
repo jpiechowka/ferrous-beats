@@ -4,7 +4,6 @@ pub mod convert {
 
 pub mod download {
     pub mod audio;
-    pub mod video;
 }
 
 pub mod identify {

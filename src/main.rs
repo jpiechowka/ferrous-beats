@@ -8,7 +8,6 @@ use crate::config::Config;
 use crate::doh::CloudflareDoHResolver;
 use crate::handlers::convert::audio::handle_audio_conversion;
 use crate::handlers::download::audio::handle_audio_download;
-use crate::handlers::download::video::handle_video_download;
 use crate::handlers::identify::audio::handle_audio_identification;
 use crate::handlers::index::handle_api_hello;
 use crate::handlers::library::list::handle_list_library_files;
@@ -103,7 +102,6 @@ async fn main() -> anyhow::Result<()> {
                 .route("/library/list", get(handle_list_library_files))
                 .route("/library/play/:library_file_name", get(handle_play_audio))
                 .route("/download/audio", post(handle_audio_download))
-                .route("/download/video", post(handle_video_download))
                 .route("/identify/audio", post(handle_audio_identification))
                 .route("/convert/audio", post(handle_audio_conversion))
                 // Tools: yt-dlp routes
