@@ -1,6 +1,6 @@
 import React from "react";
-import FerrousNavbar from "@/components/navbar";
-import MusicLibraryTable from "@/components/table";
+import FerrousNavbar from "@/components/FerrousNavbar";
+import MusicLibraryTable from "@/components/MusicLibraryTable";
 
 
 export default function Home() {

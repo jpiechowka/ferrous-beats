@@ -12,7 +12,7 @@ import {
 } from "@nextui-org/navbar";
 import {Link} from "@nextui-org/link";
 import React, {useState} from "react";
-import {FerrousBeatsLogo} from "@/components/logo";
+import {FerrousBeatsLogo} from "@/components/icons/FerrousBeatsLogo";
 import {Tooltip} from "@nextui-org/tooltip";
 
 export default function FerrousNavbar() {
