@@ -6,27 +6,23 @@ import {Card, CardBody} from "@nextui-org/card";
 import {Divider} from "@nextui-org/divider";
 import {Howl} from 'howler';
 import {Button} from "@nextui-org/button";
-import {Slider} from "@nextui-org/slider";
-import {HeartIcon} from "./icons/HeartIcon";
-import {PauseCircleIcon} from "./icons/PauseCircleIcon";
-import {PlayCircleIcon} from "./icons/PlayCircleIcon";
-import {RepeatIcon} from "./icons/RepeatIcon";
-import {ShuffleIcon} from "./icons/ShuffleIcon";
-import {NextIcon} from "@/components/icons/NextIcon";
-import {PreviousIcon} from "@/components/icons/PreviousIcon";
+import MusicPlayer from "./MusicPlayer";
+
+const MAX_SHUFFLE_HISTORY_SIZE: number = 32;
 
 export default function MusicLibraryTable() {
     const [libraryPath, setLibraryPath] = useState<string>("");
     const [libraryContents, setLibraryContent] = useState<string[]>([]);
-    const [currentlyPlaying, setCurrentlyPlaying] = useState<string>("");
-    const [isMusicPlaying, setIsMusicPlaying] = useState<boolean>(false);
+    const [currentTrackName, setCurrentlyPlaying] = useState<string>("");
     const [currentPlayingIndex, setCurrentPlayingIndex] = useState<number>(0);
-    const [isRepeatOn, setIsRepeatOn] = useState<boolean>(false);
+    const [isMusicPlaying, setIsMusicPlaying] = useState<boolean>(false);
     const [isShuffleOn, setIsShuffleOn] = useState<boolean>(false);
+    const [isRepeatOn, setIsRepeatOn] = useState<boolean>(false);
+    const [isLiked, setIsLiked] = useState(false);
     const [volume, setVolume] = useState<number>(0.5);
-    const [liked, setLiked] = useState(false);
+    const [shuffleHistory, setShuffleHistory] = useState<number[]>([]);
+    const [shuffleHistorySize, setShuffleHistorySize] = useState(MAX_SHUFFLE_HISTORY_SIZE);
     const soundRef = useRef<Howl | null>(null);
-
 
     useEffect(() => {
         fetch('http://localhost:13337/library/list')
@@ -34,6 +30,11 @@ export default function MusicLibraryTable() {
             .then(data => {
                 setLibraryPath(data.library_dir);
                 setLibraryContent(data.files);
+
+                const newShuffleHistorySize = data.files.length <= MAX_SHUFFLE_HISTORY_SIZE
+                    ? data.files.length - 1
+                    : MAX_SHUFFLE_HISTORY_SIZE;
+                setShuffleHistorySize(newShuffleHistorySize)
             })
             .catch(error => console.error('Error fetching library list:', error));
     }, []);
@@ -79,6 +80,11 @@ export default function MusicLibraryTable() {
         const index = libraryContents.indexOf(fileName);
         setCurrentPlayingIndex(index);
 
+        if (isShuffleOn) {
+            setShuffleHistory(prev => [index, ...prev].slice(0, shuffleHistorySize));
+            console.debug('Shuffle history:', shuffleHistory);
+        }
+
         soundRef.current.play();
     }
 
@@ -92,28 +98,54 @@ export default function MusicLibraryTable() {
         }
     };
 
+    // TODO: Shuffle is not working correctly yet
+    const getNextShuffleIndex = () => {
+        const availableTracks = libraryContents.length;
+        if (availableTracks <= 1) return 0; // If there's only one track or less, always return 0
+
+        const historySize = Math.min(shuffleHistorySize, availableTracks - 1);
+        let nextIndex;
+        do {
+            nextIndex = Math.floor(Math.random() * availableTracks);
+        } while (shuffleHistory.slice(0, historySize).includes(nextIndex));
+        return nextIndex;
+    };
+
     const handleNext = () => {
+        if (libraryContents.length === 0) return;
+
+        let nextIndex: number;
         if (isShuffleOn) {
-            const nextIndex = Math.floor(Math.random() * libraryContents.length);
-            setCurrentPlayingIndex(nextIndex);
-            handlePlay(libraryContents[nextIndex]);
+            nextIndex = getNextShuffleIndex();
         } else {
-            const nextIndex = (currentPlayingIndex + 1) % libraryContents.length;
-            setCurrentPlayingIndex(nextIndex);
-            handlePlay(libraryContents[nextIndex]);
+            nextIndex = (currentPlayingIndex + 1) % libraryContents.length;
         }
+
+        setCurrentPlayingIndex(nextIndex);
+        handlePlay(libraryContents[nextIndex]);
     };
 
     const handlePrevious = () => {
+        if (libraryContents.length === 0) return;
+
+        let prevIndex: number;
         if (isShuffleOn) {
-            const prevIndex = Math.floor(Math.random() * libraryContents.length);
-            setCurrentPlayingIndex(prevIndex);
-            handlePlay(libraryContents[prevIndex]);
+            if (shuffleHistory.length > 1) {
+                // Remove the current track from history and get the previous one
+                const [, newPrevIndex, ...rest] = shuffleHistory;
+                prevIndex = newPrevIndex;
+                setShuffleHistory([newPrevIndex, ...rest]);
+            } else {
+                // If there's no previous track in history, get a new random index
+                prevIndex = getNextShuffleIndex();
+                setShuffleHistory(prev => [prevIndex, ...prev].slice(0, shuffleHistorySize));
+            }
         } else {
-            const prevIndex = (currentPlayingIndex - 1 + libraryContents.length) % libraryContents.length;
-            setCurrentPlayingIndex(prevIndex);
-            handlePlay(libraryContents[prevIndex]);
+            prevIndex = (currentPlayingIndex - 1 + libraryContents.length) % libraryContents.length;
         }
+
+        setCurrentPlayingIndex(prevIndex);
+        handlePlay(libraryContents[prevIndex]);
     };
 
     const handleVolumeChange = (value: number | number[]) => {
@@ -123,11 +155,24 @@ export default function MusicLibraryTable() {
     };
 
     const toggleShuffle = () => {
-        setIsShuffleOn(!isShuffleOn);
+        setIsShuffleOn(prev => {
+            if (!prev) {
+                // When turning shuffle on, reset the history with the current track
+                setShuffleHistory([currentPlayingIndex]);
+            } else {
+                // When turning shuffle off, clear the history
+                setShuffleHistory([]);
+            }
+            return !prev;
+        });
     };
 
     const toggleRepeat = () => {
         setIsRepeatOn(!isRepeatOn);
+    };
+
+    const toggleIsLiked = () => {
+        setIsLiked(!isLiked);
     };
 
     return (
@@ -163,103 +208,25 @@ export default function MusicLibraryTable() {
             </Table>
 
             {/* TODO: Create separate component and delete conditional check */}
-            {currentlyPlaying && (
+            {currentTrackName && (
                 <>
                     <Divider className="my-4"/>
 
-                    <Card
-                        isBlurred
-                        className="border-none bg-background/60 dark:bg-default-100/50 my-8 mx-8"
-                        shadow="sm"
-                    >
-                        <CardBody>
-                            <div className="grid grid-cols-1 gap-4 items-center justify-center">
-                                <div className="flex flex-col">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex flex-col gap-0">
-                                            <h1 className="text-large font-medium">{currentlyPlaying}</h1>
-                                        </div>
-                                        <Button
-                                            isIconOnly
-                                            className="text-default-900/60 data-[hover]:bg-foreground/10"
-                                            radius="full"
-                                            variant="light"
-                                            onPress={() => setLiked((v) => !v)}
-                                        >
-                                            <HeartIcon
-                                                className={liked ? "[&>path]:stroke-transparent" : ""}
-                                                fill={liked ? "currentColor" : "none"}
-                                            />
-                                        </Button>
-                                    </div>
-
-                                    <div className="flex w-full items-center justify-center mt-4">
-                                        <Button
-                                            isIconOnly
-                                            className="data-[hover]:bg-foreground/10"
-                                            radius="full"
-                                            variant="light"
-                                            onClick={toggleShuffle}
-                                        >
-                                            <ShuffleIcon size={24} className={isShuffleOn ? "text-primary" : ""}/>
-                                        </Button>
-                                        <Button
-                                            isIconOnly
-                                            className="data-[hover]:bg-foreground/10"
-                                            radius="full"
-                                            variant="light"
-                                            onClick={handlePrevious}
-                                        >
-                                            <PreviousIcon size={24}/>
-                                        </Button>
-                                        <Button
-                                            isIconOnly
-                                            className="data-[hover]:bg-foreground/10"
-                                            radius="full"
-                                            variant="light"
-                                            onClick={handlePlayPause}
-                                        >
-                                            {isMusicPlaying ? <PauseCircleIcon size={54}/> :
-                                                <PlayCircleIcon size={54}/>}
-                                        </Button>
-                                        <Button
-                                            isIconOnly
-                                            className="data-[hover]:bg-foreground/10"
-                                            radius="full"
-                                            variant="light"
-                                            onClick={handleNext}
-                                        >
-                                            <NextIcon size={24}/>
-                                        </Button>
-                                        <Button
-                                            isIconOnly
-                                            className="data-[hover]:bg-foreground/10"
-                                            radius="full"
-                                            variant="light"
-                                            onClick={toggleRepeat}
-                                        >
-                                            <RepeatIcon size={24} className={isRepeatOn ? "text-primary" : ""}/>
-                                        </Button>
-                                    </div>
-
-                                    <div className="flex items-center mt-4 w-full">
-                                        <Slider
-                                            label="Volume"
-                                            size="md"
-                                            color="warning"
-                                            step={0.05}
-                                            maxValue={1}
-                                            minValue={0}
-                                            value={volume}
-                                            onChange={handleVolumeChange}
-                                            className="w-full max-w-md mx-auto"
-                                        />
-                                    </div>
-
-                                </div>
-                            </div>
-                        </CardBody>
-                    </Card>
+                    <MusicPlayer
+                        currentTrackName={currentTrackName}
+                        isMusicPlaying={isMusicPlaying}
+                        isShuffleOn={isShuffleOn}
+                        isRepeatOn={isRepeatOn}
+                        isLiked={isLiked}
+                        currentVolume={volume}
+                        toggleShuffle={toggleShuffle}
+                        toggleRepeat={toggleRepeat}
+                        toggleIsLiked={toggleIsLiked}
+                        handlePrevious={handlePrevious}
+                        handlePlayPause={handlePlayPause}
+                        handleNext={handleNext}
+                        handleVolumeChange={handleVolumeChange}
+                    />
                 </>
             )}
         </>
