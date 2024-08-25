@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import FerrousNavbar from "@/components/FerrousNavbar";
 import MusicPlayer from "@/components/MusicPlayer";

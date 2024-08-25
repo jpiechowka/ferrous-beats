@@ -106,11 +106,11 @@ async fn main() -> anyhow::Result<()> {
                 .route("/convert/audio", post(handle_audio_conversion))
                 // Tools: yt-dlp routes
                 .route("/tools/yt-dlp/download", post(handle_yt_dlp_download))
-                .route("/tools/yt-dlp/status", post(handle_yt_dlp_status))
+                .route("/tools/yt-dlp/status", get(handle_yt_dlp_status))
                 .route("/tools/yt-dlp/update", post(handle_yt_dlp_update))
                 // Tools: ffmpeg routes
                 .route("/tools/ffmpeg/download", post(handle_ffmpeg_download))
-                .route("/tools/ffmpeg/status", post(handle_ffmpeg_status))
+                .route("/tools/ffmpeg/status", get(handle_ffmpeg_status))
                 // Tools: chromaprint routes
                 .route(
                     "/tools/chromaprint/download",
@@ -118,7 +118,7 @@ async fn main() -> anyhow::Result<()> {
                 )
                 .route(
                     "/tools/chromaprint/status",
-                    post(handle_chromaprint_fpcalc_status),
+                    get(handle_chromaprint_fpcalc_status),
                 )
                 .layer(tower_http::catch_panic::CatchPanicLayer::new())
                 .layer(trace_layer)

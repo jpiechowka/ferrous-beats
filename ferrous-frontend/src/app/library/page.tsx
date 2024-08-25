@@ -1,3 +1,5 @@
+"use client";
+
 import FerrousNavbar from "@/components/FerrousNavbar";
 import React from "react";
 import MusicLibraryTable from "@/components/MusicLibraryTable";

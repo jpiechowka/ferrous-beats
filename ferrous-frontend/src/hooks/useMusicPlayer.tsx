@@ -32,14 +32,13 @@ export const useMusicPlayer = () => {
             onend: () => {
                 setIsMusicPlaying(false);
                 if (isRepeatOn) {
+                    // TODO: Doesn't work correctly
                     newHowl.play();
                 } else {
                     const nextIndex = (currentTrackIdx + 1) % playlist.length;
-                    if (nextIndex !== currentTrackIdx) {
-                        setCurrentTrackIdx(nextIndex);
-                        // TODO: stack overflow here?
-                        handlePlay(playlist[nextIndex]);
-                    }
+                    setCurrentTrackIdx(nextIndex);
+                    // TODO: stack overflow here?
+                    handlePlay(playlist[nextIndex]);
                 }
             },
             onpause: () => {
