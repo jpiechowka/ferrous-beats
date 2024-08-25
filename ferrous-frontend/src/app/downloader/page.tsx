@@ -8,6 +8,8 @@ import {Button} from '@nextui-org/button';
 import {Input} from '@nextui-org/input';
 import {Card, CardBody} from '@nextui-org/card';
 import {Skeleton} from '@nextui-org/skeleton';
+import {useMusicPlayerContext} from "@/contexts/MusicPlayerContext";
+import {Divider} from "@nextui-org/divider";
 
 interface DownloadAudioRequest {
     audio_url: string;
@@ -31,6 +33,7 @@ export default function DownloaderPage() {
     const [audioUrl, setAudioUrl] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [downloadResult, setDownloadResult] = useState<MediaDownloadResponse | null>(null);
+    const {handleUpdatePlaylistContents} = useMusicPlayerContext();
 
     const handleDownload = async () => {
         setIsLoading(true);
@@ -56,6 +59,16 @@ export default function DownloaderPage() {
                 position: "bottom-center"
             });
             setDownloadResult(result);
+
+            // Refresh the playlist
+            const libraryResponse = await fetch('http://localhost:13337/library/list');
+            const libraryData = await libraryResponse.json();
+            handleUpdatePlaylistContents(libraryData.files);
+            toast.success(`Playlist was refreshed with newly downloaded track`, {
+                duration: 7500,
+                closeButton: true,
+                position: "bottom-center"
+            });
         } catch (error) {
             console.error('Error downloading audio:', error);
             toast.error(`Failed to download ${audioUrl}: ${error instanceof Error ? error.message : String(error)}`, {
@@ -117,6 +130,9 @@ export default function DownloaderPage() {
                     </Card>
                 )}
             </div>
+
+            <Divider className="my-4"/>
+
             <MusicPlayer/>
         </>
     );

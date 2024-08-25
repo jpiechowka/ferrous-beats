@@ -7,6 +7,7 @@ import {ToolsContext} from "@/contexts/ToolsContext";
 import {Card, CardBody} from '@nextui-org/card';
 import {Skeleton} from '@nextui-org/skeleton';
 import {Button} from '@nextui-org/button';
+import {Divider} from "@nextui-org/divider";
 
 // TODO: check this
 function escapePath(path: string): string {
@@ -48,6 +49,8 @@ export default function ToolsPage() {
                     </Card>
                 ))}
             </div>
+
+            <Divider className="my-4"/>
 
             <MusicPlayer></MusicPlayer>
         </>

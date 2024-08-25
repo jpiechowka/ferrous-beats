@@ -5,14 +5,13 @@ import {Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from "@
 import {Card, CardBody} from "@nextui-org/card";
 import {Divider} from "@nextui-org/divider";
 import {Button} from "@nextui-org/button";
-import MusicPlayer from "@/components/MusicPlayer";
 import {useMusicPlayerContext} from "@/contexts/MusicPlayerContext";
 
 export default function MusicLibraryTable() {
     const [libraryPath, setLibraryPath] = useState<string>("");
-    const [libraryContents, setLibraryContent] = useState<string[]>([]);
 
     const {
+        playlist,
         handleUpdatePlaylistContents,
         handlePlay,
     } = useMusicPlayerContext();
@@ -22,7 +21,6 @@ export default function MusicLibraryTable() {
             .then(response => response.json())
             .then(data => {
                 setLibraryPath(data.library_dir);
-                setLibraryContent(data.files);
                 handleUpdatePlaylistContents(data.files);
             })
             .catch(error => console.error('Error fetching library list:', error));
@@ -40,12 +38,14 @@ export default function MusicLibraryTable() {
 
             <Table isStriped aria-label="Music library table">
                 <TableHeader>
+                    <TableColumn>#</TableColumn>
                     <TableColumn>File Name</TableColumn>
                     <TableColumn>Actions</TableColumn>
                 </TableHeader>
                 <TableBody>
-                    {libraryContents.map((file, index) => (
+                    {playlist.map((file, index) => (
                         <TableRow key={index}>
+                            <TableCell>{index + 1}</TableCell>
                             <TableCell>{file}</TableCell>
                             <TableCell>
                                 <Button
@@ -59,10 +59,6 @@ export default function MusicLibraryTable() {
                     ))}
                 </TableBody>
             </Table>
-
-            <Divider className="my-4"/>
-
-            <MusicPlayer></MusicPlayer>
         </>
     );
 }

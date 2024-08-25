@@ -3,6 +3,7 @@
 import React from 'react';
 import FerrousNavbar from "@/components/FerrousNavbar";
 import MusicPlayer from "@/components/MusicPlayer";
+import {Divider} from "@nextui-org/divider";
 
 export default function ConverterPage() {
     return (
@@ -11,6 +12,9 @@ export default function ConverterPage() {
             <div>
                 <h1>Convert Music with ffmpeg</h1>
             </div>
+
+            <Divider className="my-4"/>
+
             <MusicPlayer></MusicPlayer>
         </>
     );
