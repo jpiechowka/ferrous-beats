@@ -24,7 +24,15 @@ const MusicPlayer: FC = () => {
         handleVolumeChange,
         handlePlayPause,
         handleNext,
-        handlePrevious
+        handlePrevious,
+        lowShelfGain,
+        highShelfGain,
+        lowShelfFreq,
+        highShelfFreq,
+        handleLowShelfGainChange,
+        handleHighShelfGainChange,
+        handleLowShelfFreqChange,
+        handleHighShelfFreqChange,
     } = useMusicPlayerContext();
 
     if (!currentTrackName || currentTrackName.trim() === "") {
@@ -119,6 +127,78 @@ const MusicPlayer: FC = () => {
                                 onChange={(value) => {
                                     if (typeof value === 'number') {
                                         handleVolumeChange(value);
+                                    }
+                                }}
+                                className="w-full max-w-md mx-auto"
+                            />
+                        </div>
+
+                        <div className="flex items-center mt-4 w-full">
+                            <Slider
+                                label="Low Shelf Gain"
+                                size="md"
+                                color="primary"
+                                step={1}
+                                maxValue={25}
+                                minValue={-25}
+                                value={lowShelfGain}
+                                onChange={(value) => {
+                                    if (typeof value === 'number') {
+                                        handleLowShelfGainChange(value);
+                                    }
+                                }}
+                                className="w-full max-w-md mx-auto"
+                            />
+                        </div>
+
+                        <div className="flex items-center mt-4 w-full">
+                            <Slider
+                                label="High Shelf Gain"
+                                size="md"
+                                color="secondary"
+                                step={1}
+                                maxValue={25}
+                                minValue={-25}
+                                value={highShelfGain}
+                                onChange={(value) => {
+                                    if (typeof value === 'number') {
+                                        handleHighShelfGainChange(value);
+                                    }
+                                }}
+                                className="w-full max-w-md mx-auto"
+                            />
+                        </div>
+
+                        <div className="flex items-center mt-4 w-full">
+                            <Slider
+                                label="Low Shelf Frequency"
+                                size="md"
+                                color="success"
+                                step={10}
+                                maxValue={1000}
+                                minValue={20}
+                                value={lowShelfFreq}
+                                onChange={(value) => {
+                                    if (typeof value === 'number') {
+                                        handleLowShelfFreqChange(value);
+                                    }
+                                }}
+                                className="w-full max-w-md mx-auto"
+                            />
+                        </div>
+
+                        <div className="flex items-center mt-4 w-full">
+                            <Slider
+                                label="High Shelf Frequency"
+                                size="md"
+                                color="danger"
+                                step={100}
+                                maxValue={20000}
+                                minValue={2000}
+                                value={highShelfFreq}
+                                onChange={(value) => {
+                                    if (typeof value === 'number') {
+                                        handleHighShelfFreqChange(value);
                                     }
                                 }}
                                 className="w-full max-w-md mx-auto"

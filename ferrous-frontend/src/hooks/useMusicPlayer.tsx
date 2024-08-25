@@ -10,6 +10,12 @@ export const useMusicPlayer = () => {
     const [isRepeatOn, setIsRepeatOn] = useState<boolean>(false);
     const [isTrackLiked, setIsTrackLiked] = useState(false);
     const [currentVolume, setCurrentVolume] = useState<number>(0.5);
+    const [lowShelfGain, setLowShelfGain] = useState<number>(0);
+    const [highShelfGain, setHighShelfGain] = useState<number>(0);
+    const [lowShelfFreq, setLowShelfFreq] = useState<number>(200);
+    const [highShelfFreq, setHighShelfFreq] = useState<number>(2000);
+    const [lowshelfFilter, setLowshelfFilter] = useState<BiquadFilterNode | null>(null);
+    const [highshelfFilter, setHighshelfFilter] = useState<BiquadFilterNode | null>(null);
     const [howl, setHowl] = useState<Howl | null>(null);
 
     const handleUpdatePlaylistContents = useCallback((newPlaylistContents: string[]) => {
@@ -25,8 +31,35 @@ export const useMusicPlayer = () => {
 
         const newHowl = new Howl({
             src: [`http://localhost:13337/library/play/${encodeURIComponent(fileName)}`],
-            html5: true,
+            // html5: true,
+            html5: false, // TODO: Enable HTML5 audio when supported, might now work currently with bass / treble filters
             volume: currentVolume,
+            onload: () => {
+                const audioCtx = Howler.ctx;
+                const source = Howler.masterGain;
+                const newLowshelfFilter = audioCtx.createBiquadFilter();
+                const newHighshelfFilter = audioCtx.createBiquadFilter();
+
+                newLowshelfFilter.type = 'lowshelf';
+                newLowshelfFilter.frequency.value = lowShelfFreq;
+                newLowshelfFilter.gain.value = lowShelfGain;
+
+                console.debug(`Lowshelf filter freq: ${newLowshelfFilter.frequency.value}, gain: ${newLowshelfFilter.gain.value}`);
+
+                newHighshelfFilter.type = 'highshelf';
+                newHighshelfFilter.frequency.value = highShelfFreq;
+                newHighshelfFilter.gain.value = highShelfGain;
+
+                console.debug(`Highshelf filter freq: ${newHighshelfFilter.frequency.value}, gain: ${newHighshelfFilter.gain.value}`);
+
+                source.disconnect();
+                source.connect(newLowshelfFilter);
+                newLowshelfFilter.connect(newHighshelfFilter);
+                newHighshelfFilter.connect(audioCtx.destination);
+
+                setLowshelfFilter(newLowshelfFilter);
+                setHighshelfFilter(newHighshelfFilter);
+            },
             onplay: () => {
                 setIsMusicPlaying(true);
                 setCurrentTrackName(fileName);
@@ -70,24 +103,20 @@ export const useMusicPlayer = () => {
         setCurrentTrackName(fileName);
         newHowl.play();
 
-    }, [howl, currentVolume, currentTrackIdx, isRepeatOn, playlist]);
+    }, [howl, currentVolume, currentTrackIdx, isRepeatOn, playlist, lowShelfGain, highShelfGain, lowShelfFreq, highShelfFreq]);
 
     const handleNext = useCallback(() => {
         const nextIndex = (currentTrackIdx + 1) % playlist.length;
-        if (nextIndex !== currentTrackIdx) {
-            setCurrentTrackIdx(nextIndex);
-            console.debug(`Playing next track: ${playlist[nextIndex]}`);
-            handlePlay(playlist[nextIndex]);
-        }
+        setCurrentTrackIdx(nextIndex);
+        console.debug(`Playing next track: ${playlist[nextIndex]}`);
+        handlePlay(playlist[nextIndex]);
     }, [currentTrackIdx, playlist, handlePlay]);
 
     const handlePrevious = useCallback(() => {
         const prevIndex = (currentTrackIdx - 1 + playlist.length) % playlist.length;
-        if (prevIndex !== currentTrackIdx) {
-            setCurrentTrackIdx(prevIndex);
-            console.debug(`Playing previous track: ${playlist[prevIndex]}`);
-            handlePlay(playlist[prevIndex]);
-        }
+        setCurrentTrackIdx(prevIndex);
+        console.debug(`Playing previous track: ${playlist[prevIndex]}`);
+        handlePlay(playlist[prevIndex]);
     }, [currentTrackIdx, playlist, handlePlay]);
 
     const handlePlayPause = useCallback(() => {
@@ -116,6 +145,46 @@ export const useMusicPlayer = () => {
             howl.volume(newVolume);
         }
     }, [howl, currentVolume]);
+
+    const handleLowShelfGainChange = useCallback((value: number) => {
+        setLowShelfGain(value);
+        if (lowshelfFilter) {
+            console.debug(`Updating lowshelf filter gain to ${value}`);
+            lowshelfFilter.gain.value = value;
+        } else {
+            console.warn(`Lowshelf filter not initialized`);
+        }
+    }, [lowshelfFilter]);
+
+    const handleHighShelfGainChange = useCallback((value: number) => {
+        setHighShelfGain(value);
+        if (highshelfFilter) {
+            console.debug(`Updating highshelf filter gain to ${value}`);
+            highshelfFilter.gain.value = value;
+        } else {
+            console.warn(`Highshelf filter not initialized`);
+        }
+    }, [highshelfFilter]);
+
+    const handleLowShelfFreqChange = useCallback((value: number) => {
+        setLowShelfFreq(value);
+        if (lowshelfFilter) {
+            console.debug(`Updating lowshelf filter frequency to ${value}`);
+            lowshelfFilter.frequency.value = value;
+        } else {
+            console.warn(`Lowshelf filter not initialized`);
+        }
+    }, [lowshelfFilter]);
+
+    const handleHighShelfFreqChange = useCallback((value: number) => {
+        setHighShelfFreq(value);
+        if (highshelfFilter) {
+            console.debug(`Updating highshelf frequency to ${value}`);
+            highshelfFilter.frequency.value = value;
+        } else {
+            console.warn(`Highshelf filter not initialized`);
+        }
+    }, [highshelfFilter]);
 
     const toggleShuffle = useCallback(() => {
         setIsShuffleOn(prev => {
@@ -150,6 +219,10 @@ export const useMusicPlayer = () => {
         isShuffleOn,
         isRepeatOn,
         isTrackLiked,
+        lowShelfGain,
+        highShelfGain,
+        lowShelfFreq,
+        highShelfFreq,
         toggleShuffle,
         toggleRepeat,
         toggleTrackLiked,
@@ -160,5 +233,9 @@ export const useMusicPlayer = () => {
         handleNext,
         handlePrevious,
         handleSeekTo,
+        handleLowShelfGainChange,
+        handleHighShelfGainChange,
+        handleLowShelfFreqChange,
+        handleHighShelfFreqChange,
     }
 }
