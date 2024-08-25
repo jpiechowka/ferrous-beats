@@ -98,9 +98,11 @@ export default function FerrousNavbar() {
                     className="md:hidden"
                 />
                 <NavbarBrand>
-                    <FerrousBeatsLogo/>
-                    <div className="w-2"></div>
-                    <p className="font-bold text-inherit">Ferrous Beats</p>
+                    <Link href="/" as={NextLink} color="foreground">
+                        <FerrousBeatsLogo/>
+                        <div className="w-2"></div>
+                        <p className="font-bold text-inherit">Ferrous Beats</p>
+                    </Link>
                 </NavbarBrand>
             </NavbarContent>
 

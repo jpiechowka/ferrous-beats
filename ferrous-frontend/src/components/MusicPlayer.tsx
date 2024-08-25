@@ -30,6 +30,10 @@ const MusicPlayer: FC = () => {
         handlePrevious
     } = useMusicPlayerContext();
 
+    if (!currentTrackName || currentTrackName.trim() === "") {
+        return null; // Don't render anything if no track is playing
+    }
+
     return (
         <Card
             isBlurred
