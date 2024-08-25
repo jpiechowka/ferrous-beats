@@ -6,6 +6,7 @@ import {toast} from "sonner";
 export const ToolsContext = createContext<{
     toolStatus: Record<string, ToolStatus>;
     downloadAndRecheckTool: (tool: string) => Promise<void>;
+    updateYtDlp: (updateChannel: string) => Promise<void>;
 } | undefined>(undefined);
 
 interface ToolStatus {
@@ -110,6 +111,52 @@ export function ToolsProvider({children}: { children: ReactNode }) {
         }
     };
 
+    const updateYtDlp = async (updateChannel: string) => {
+        try {
+            const response = await fetch('http://localhost:13337/tools/yt-dlp/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({update_channel: updateChannel}),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Update result:', result);
+
+            // Recheck the tool status
+            const newStatus = await fetchToolStatus('yt-dlp', `http://localhost:13337/tools/yt-dlp/status`);
+            setToolStatus(prevStatus => ({
+                ...prevStatus,
+                ['yt-dlp']: {
+                    isOk: newStatus.isOk,
+                    isLoading: false,
+                    error: newStatus.error,
+                    path: newStatus.path ?? undefined,
+                    version: newStatus.version ?? undefined,
+                },
+            }));
+
+            toast.success(`yt-dlp updated successfully using channel: ${updateChannel}`, {
+                duration: 7500,
+                closeButton: true,
+                position: "bottom-center"
+            });
+        } catch (error) {
+            console.error('Error updating yt-dlp:', error);
+            toast.error(`Failed to update yt-dlp: ${error instanceof Error ? error.message : String(error)}`, {
+                duration: Infinity,
+                important: true,
+                closeButton: true,
+                position: "bottom-center"
+            });
+        }
+    };
+
     useEffect(() => {
         const fetchAllToolStatuses = async () => {
             const toolsWithEndpoints = [
@@ -158,7 +205,7 @@ export function ToolsProvider({children}: { children: ReactNode }) {
     }, []);
 
     return (
-        <ToolsContext.Provider value={{toolStatus, downloadAndRecheckTool}}>
+        <ToolsContext.Provider value={{toolStatus, downloadAndRecheckTool, updateYtDlp}}>
             {children}
         </ToolsContext.Provider>
     );

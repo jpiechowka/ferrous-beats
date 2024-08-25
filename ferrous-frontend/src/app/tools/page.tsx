@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import FerrousNavbar from "@/components/FerrousNavbar";
 import MusicPlayer from "@/components/MusicPlayer";
 import {ToolsContext} from "@/contexts/ToolsContext";
@@ -8,6 +8,7 @@ import {Card, CardBody} from '@nextui-org/card';
 import {Skeleton} from '@nextui-org/skeleton';
 import {Button} from '@nextui-org/button';
 import {Divider} from "@nextui-org/divider";
+import {Select, SelectItem} from '@nextui-org/select';
 
 // TODO: check this
 function escapePath(path: string): string {
@@ -16,7 +17,23 @@ function escapePath(path: string): string {
 }
 
 export default function ToolsPage() {
-    const {toolStatus, downloadAndRecheckTool} = useContext(ToolsContext)!;
+    const {toolStatus, downloadAndRecheckTool, updateYtDlp} = useContext(ToolsContext)!;
+    const [ytDlpUpdateChannel, setYtDlpUpdateChannel] = useState<string>("stable");
+    // States to disable buttons
+    const [isDownloading, setIsDownloading] = useState<Record<string, boolean>>({});
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    const handleDownloadAndRecheck = async (tool: string) => {
+        setIsDownloading(prev => ({...prev, [tool]: true}));
+        await downloadAndRecheckTool(tool);
+        setIsDownloading(prev => ({...prev, [tool]: false}));
+    };
+
+    const handleUpdateYtDlp = async () => {
+        setIsUpdating(true);
+        await updateYtDlp(ytDlpUpdateChannel);
+        setIsUpdating(false);
+    };
 
     return (
         <>
@@ -38,11 +55,33 @@ export default function ToolsPage() {
                                 {!status.isOk && (
                                     <Button
                                         color="primary"
-                                        onClick={() => downloadAndRecheckTool(tool)}
+                                        onClick={() => handleDownloadAndRecheck(tool)}
+                                        isLoading={isDownloading[tool]}
                                         className="mt-2"
                                     >
-                                        Download and Recheck
+                                        {isDownloading[tool] ? 'Downloading...' : 'Download and Recheck'}
                                     </Button>
+                                )}
+                                {tool === 'yt-dlp' && status.isOk && (
+                                    <div className="mt-2">
+                                        <Select
+                                            label="Update Channel"
+                                            value={ytDlpUpdateChannel}
+                                            onChange={(e) => setYtDlpUpdateChannel(e.target.value)}
+                                            className="mb-2"
+                                        >
+                                            <SelectItem key="stable" value="stable">Stable</SelectItem>
+                                            <SelectItem key="master" value="master">Master</SelectItem>
+                                            <SelectItem key="nightly" value="nightly">Nightly</SelectItem>
+                                        </Select>
+                                        <Button
+                                            color="secondary"
+                                            onClick={handleUpdateYtDlp}
+                                            isLoading={isUpdating}
+                                        >
+                                            {isUpdating ? 'Updating...' : 'Update yt-dlp'}
+                                        </Button>
+                                    </div>
                                 )}
                             </Skeleton>
                         </CardBody>
