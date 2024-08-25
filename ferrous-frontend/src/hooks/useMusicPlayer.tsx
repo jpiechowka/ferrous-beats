@@ -118,15 +118,27 @@ export const useMusicPlayer = () => {
     }, [howl, currentVolume]);
 
     const toggleShuffle = useCallback(() => {
-        setIsShuffleOn(prev => !prev);
+        setIsShuffleOn(prev => {
+            const newValue = !prev;
+            console.debug(`Toggling shuffle mode to ${newValue}`);
+            return newValue;
+        });
     }, []);
 
     const toggleRepeat = useCallback(() => {
-        setIsRepeatOn(prev => !prev);
+        setIsRepeatOn(prev => {
+            const newValue = !prev;
+            console.debug(`Toggling repeat mode to ${newValue}`);
+            return newValue;
+        });
     }, []);
 
     const toggleTrackLiked = useCallback(() => {
-        setIsTrackLiked(prev => !prev);
+        setIsTrackLiked(prev => {
+            const newValue = !prev;
+            console.debug(`Toggling track liked status to ${newValue}`);
+            return newValue;
+        });
     }, []);
 
     return {
