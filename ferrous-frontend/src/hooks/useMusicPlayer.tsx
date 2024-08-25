@@ -13,10 +13,12 @@ export const useMusicPlayer = () => {
     const [howl, setHowl] = useState<Howl | null>(null);
 
     const handleUpdatePlaylistContents = useCallback((newPlaylistContents: string[]) => {
+        console.debug("Updating playlist contents");
         setPlaylist(newPlaylistContents);
     }, []);
 
     const handlePlay = useCallback((fileName: string) => {
+        console.debug(`Starting playback of a new track: ${fileName}`);
         if (howl) {
             howl.stop();
         }
@@ -33,11 +35,13 @@ export const useMusicPlayer = () => {
                 setIsMusicPlaying(false);
                 if (isRepeatOn) {
                     // TODO: Doesn't work correctly
+                    console.debug(`Repeat is on, playing the same track again`);
                     newHowl.play();
                 } else {
                     const nextIndex = (currentTrackIdx + 1) % playlist.length;
                     setCurrentTrackIdx(nextIndex);
                     // TODO: stack overflow here?
+                    console.debug(`Repeat is off, playing next track: ${playlist[nextIndex]}`);
                     handlePlay(playlist[nextIndex]);
                 }
             },
@@ -72,6 +76,7 @@ export const useMusicPlayer = () => {
         const nextIndex = (currentTrackIdx + 1) % playlist.length;
         if (nextIndex !== currentTrackIdx) {
             setCurrentTrackIdx(nextIndex);
+            console.debug(`Playing next track: ${playlist[nextIndex]}`);
             handlePlay(playlist[nextIndex]);
         }
     }, [currentTrackIdx, playlist, handlePlay]);
@@ -80,6 +85,7 @@ export const useMusicPlayer = () => {
         const prevIndex = (currentTrackIdx - 1 + playlist.length) % playlist.length;
         if (prevIndex !== currentTrackIdx) {
             setCurrentTrackIdx(prevIndex);
+            console.debug(`Playing previous track: ${playlist[prevIndex]}`);
             handlePlay(playlist[prevIndex]);
         }
     }, [currentTrackIdx, playlist, handlePlay]);
@@ -87,8 +93,10 @@ export const useMusicPlayer = () => {
     const handlePlayPause = useCallback(() => {
         if (howl) {
             if (isMusicPlaying) {
+                console.debug("Pausing playback");
                 howl.pause();
             } else {
+                console.debug("Resuming playback after pausing");
                 howl.play();
             }
             setIsMusicPlaying(!isMusicPlaying);
