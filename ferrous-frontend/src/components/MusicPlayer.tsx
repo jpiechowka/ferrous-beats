@@ -3,15 +3,12 @@
 import React, {FC} from "react";
 import {Card, CardBody} from "@nextui-org/card";
 import {Button} from "@nextui-org/button";
-import {HeartIcon} from "@/components/icons/HeartIcon";
-import {ShuffleIcon} from "@/components/icons/ShuffleIcon";
-import {PreviousIcon} from "@/components/icons/PreviousIcon";
-import {PauseCircleIcon} from "@/components/icons/PauseCircleIcon";
-import {PlayCircleIcon} from "@/components/icons/PlayCircleIcon";
-import {NextIcon} from "@/components/icons/NextIcon";
-import {RepeatIcon} from "@/components/icons/RepeatIcon";
 import {Slider} from "@nextui-org/slider";
 import {useMusicPlayerContext} from "@/contexts/MusicPlayerContext";
+import {FaRegHeart} from "react-icons/fa";
+import {FaCirclePause, FaCirclePlay, FaRepeat, FaShuffle} from "react-icons/fa6";
+import {ImNext, ImPrevious} from "react-icons/im";
+
 
 const MusicPlayer: FC = () => {
     const {
@@ -54,7 +51,7 @@ const MusicPlayer: FC = () => {
                                 variant="light"
                                 onPress={toggleTrackLiked}
                             >
-                                <HeartIcon
+                                <FaRegHeart
                                     className={isTrackLiked ? "[&>path]:stroke-transparent" : ""}
                                     fill={isTrackLiked ? "currentColor" : "none"}
                                 />
@@ -69,7 +66,7 @@ const MusicPlayer: FC = () => {
                                 variant="light"
                                 onClick={toggleShuffle}
                             >
-                                <ShuffleIcon size={24} className={isShuffleOn ? "text-primary" : ""}/>
+                                <FaShuffle size={24} className={isShuffleOn ? "text-primary" : ""}/>
                             </Button>
                             <Button
                                 isIconOnly
@@ -78,7 +75,7 @@ const MusicPlayer: FC = () => {
                                 variant="light"
                                 onClick={handlePrevious}
                             >
-                                <PreviousIcon size={24}/>
+                                <ImPrevious size={24}/>
                             </Button>
                             <Button
                                 isIconOnly
@@ -87,8 +84,8 @@ const MusicPlayer: FC = () => {
                                 variant="light"
                                 onClick={handlePlayPause}
                             >
-                                {isMusicPlaying ? <PauseCircleIcon size={54}/> :
-                                    <PlayCircleIcon size={54}/>}
+                                {isMusicPlaying ? <FaCirclePause size={54}/> :
+                                    <FaCirclePlay size={54}/>}
                             </Button>
                             <Button
                                 isIconOnly
@@ -97,7 +94,7 @@ const MusicPlayer: FC = () => {
                                 variant="light"
                                 onClick={handleNext}
                             >
-                                <NextIcon size={24}/>
+                                <ImNext size={24}/>
                             </Button>
                             <Button
                                 isIconOnly
@@ -106,7 +103,7 @@ const MusicPlayer: FC = () => {
                                 variant="light"
                                 onClick={toggleRepeat}
                             >
-                                <RepeatIcon size={24} className={isRepeatOn ? "text-primary" : ""}/>
+                                <FaRepeat size={24} className={isRepeatOn ? "text-primary" : ""}/>
                             </Button>
                         </div>
 

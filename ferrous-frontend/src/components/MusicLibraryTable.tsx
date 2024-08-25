@@ -8,7 +8,6 @@ import {Button} from "@nextui-org/button";
 import MusicPlayer from "@/components/MusicPlayer";
 import {useMusicPlayerContext} from "@/contexts/MusicPlayerContext";
 
-
 export default function MusicLibraryTable() {
     const [libraryPath, setLibraryPath] = useState<string>("");
     const [libraryContents, setLibraryContent] = useState<string[]>([]);

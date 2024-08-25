@@ -12,10 +12,10 @@ import {
 } from "@nextui-org/navbar";
 import {Link} from "@nextui-org/link";
 import React, {useState} from "react";
-import {FerrousBeatsLogo} from "@/components/icons/FerrousBeatsLogo";
 import {Tooltip} from "@nextui-org/tooltip";
 import {usePathname} from "next/navigation";
 import NextLink from 'next/link';
+import {CgPiano} from "react-icons/cg";
 
 export default function FerrousNavbar() {
     const pathname = usePathname();
@@ -99,7 +99,7 @@ export default function FerrousNavbar() {
                 />
                 <NavbarBrand>
                     <Link href="/" as={NextLink} color="foreground">
-                        <FerrousBeatsLogo/>
+                        <CgPiano size={32}/>
                         <div className="w-2"></div>
                         <p className="font-bold text-inherit">Ferrous Beats</p>
                     </Link>
