@@ -1,9 +1,12 @@
-import { NextUIProvider } from '@nextui-org/react'
+import {MusicPlayerProvider} from '@/contexts/MusicPlayerContext'
+import {NextUIProvider} from '@nextui-org/react'
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({children}: { children: React.ReactNode }) {
     return (
         <NextUIProvider>
-            {children}
+            <MusicPlayerProvider>
+                {children}
+            </MusicPlayerProvider>
         </NextUIProvider>
     )
 }

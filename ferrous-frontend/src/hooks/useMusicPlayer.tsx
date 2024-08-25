@@ -1,0 +1,145 @@
+import {useCallback, useState} from "react";
+import {Howl} from "howler";
+
+export const useMusicPlayer = () => {
+    const [playlist, setPlaylist] = useState<string[]>([]);
+    const [currentTrackName, setCurrentTrackName] = useState<string>("");
+    const [currentTrackIdx, setCurrentTrackIdx] = useState<number>(0);
+    const [isMusicPlaying, setIsMusicPlaying] = useState<boolean>(false);
+    const [isShuffleOn, setIsShuffleOn] = useState<boolean>(false);
+    const [isRepeatOn, setIsRepeatOn] = useState<boolean>(false);
+    const [isTrackLiked, setIsTrackLiked] = useState(false);
+    const [currentVolume, setCurrentVolume] = useState<number>(0.5);
+    const [howl, setHowl] = useState<Howl | null>(null);
+
+    const handleUpdatePlaylistContents = useCallback((newPlaylistContents: string[]) => {
+        setPlaylist(newPlaylistContents);
+    }, []);
+
+    const handlePlay = useCallback((fileName: string) => {
+        if (howl) {
+            howl.stop();
+        }
+
+        const newHowl = new Howl({
+            src: [`http://localhost:13337/library/play/${encodeURIComponent(fileName)}`],
+            html5: true,
+            volume: currentVolume,
+            onplay: () => {
+                setIsMusicPlaying(true);
+                setCurrentTrackName(fileName);
+            },
+            onend: () => {
+                setIsMusicPlaying(false);
+                if (isRepeatOn) {
+                    newHowl.play();
+                } else {
+                    const nextIndex = (currentTrackIdx + 1) % playlist.length;
+                    if (nextIndex !== currentTrackIdx) {
+                        setCurrentTrackIdx(nextIndex);
+                        // TODO: stack overflow here?
+                        handlePlay(playlist[nextIndex]);
+                    }
+                }
+            },
+            onpause: () => {
+                setIsMusicPlaying(false);
+            },
+            onstop: () => {
+                setIsMusicPlaying(false);
+                setCurrentTrackName("");
+            },
+            onloaderror: (id, error) => {
+                console.error(`Error loading track with id ${id}: ${error}`);
+                setIsMusicPlaying(false);
+                setCurrentTrackName("");
+            },
+            onplayerror: (id, error) => {
+                console.error(`Error playing track with id ${id}: ${error}`);
+                setIsMusicPlaying(false);
+                setCurrentTrackName("");
+            },
+        })
+
+        setHowl(newHowl);
+        const index = playlist.indexOf(fileName);
+        setCurrentTrackIdx(index);
+        setCurrentTrackName(fileName);
+        newHowl.play();
+
+    }, [howl, currentVolume, currentTrackIdx, isRepeatOn, playlist]);
+
+    const handleNext = useCallback(() => {
+        const nextIndex = (currentTrackIdx + 1) % playlist.length;
+        if (nextIndex !== currentTrackIdx) {
+            setCurrentTrackIdx(nextIndex);
+            handlePlay(playlist[nextIndex]);
+        }
+    }, [currentTrackIdx, playlist, handlePlay]);
+
+    const handlePrevious = useCallback(() => {
+        const prevIndex = (currentTrackIdx - 1 + playlist.length) % playlist.length;
+        if (prevIndex !== currentTrackIdx) {
+            setCurrentTrackIdx(prevIndex);
+            handlePlay(playlist[prevIndex]);
+        }
+    }, [currentTrackIdx, playlist, handlePlay]);
+
+    const handlePlayPause = useCallback(() => {
+        if (howl) {
+            if (isMusicPlaying) {
+                howl.pause();
+            } else {
+                howl.play();
+            }
+            setIsMusicPlaying(!isMusicPlaying);
+        }
+    }, [howl, isMusicPlaying]);
+
+    const handleSeekTo = useCallback((position: number) => {
+        if (howl) {
+            howl.seek(position);
+        }
+    }, [howl]);
+
+    const handleVolumeChange = useCallback((newVolume: number) => {
+        console.debug(`Changing volume from ${currentVolume} to ${newVolume}`);
+        setCurrentVolume(newVolume);
+        if (howl) {
+            howl.volume(newVolume);
+        }
+    }, [howl, currentVolume]);
+
+    const toggleShuffle = useCallback(() => {
+        setIsShuffleOn(prev => !prev);
+    }, []);
+
+    const toggleRepeat = useCallback(() => {
+        setIsRepeatOn(prev => !prev);
+    }, []);
+
+    const toggleTrackLiked = useCallback(() => {
+        setIsTrackLiked(prev => !prev);
+    }, []);
+
+    return {
+        playlist,
+        currentTrackName,
+        currentTrackIdx,
+        currentVolume,
+        isMusicPlaying,
+        isShuffleOn,
+        isRepeatOn,
+        isTrackLiked,
+        toggleShuffle,
+        toggleRepeat,
+        toggleTrackLiked,
+        handleUpdatePlaylistContents,
+        handleVolumeChange,
+        handlePlay,
+        handlePlayPause,
+        handleNext,
+        handlePrevious,
+        handleSeekTo,
+    }
+}
