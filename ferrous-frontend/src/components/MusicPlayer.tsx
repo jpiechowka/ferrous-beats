@@ -139,8 +139,8 @@ const MusicPlayer: FC = () => {
                                 size="md"
                                 color="primary"
                                 step={1}
-                                maxValue={25}
-                                minValue={-25}
+                                maxValue={40}
+                                minValue={-40}
                                 value={lowShelfGain}
                                 onChange={(value) => {
                                     if (typeof value === 'number') {
@@ -149,23 +149,20 @@ const MusicPlayer: FC = () => {
                                 }}
                                 className="w-full max-w-md mx-auto"
                             />
-                        </div>
-
-                        <div className="flex items-center mt-4 w-full">
                             <Slider
                                 label="High Shelf Gain"
                                 size="md"
                                 color="secondary"
                                 step={1}
-                                maxValue={25}
-                                minValue={-25}
+                                maxValue={40}
+                                minValue={-40}
                                 value={highShelfGain}
                                 onChange={(value) => {
                                     if (typeof value === 'number') {
                                         handleHighShelfGainChange(value);
                                     }
                                 }}
-                                className="w-full max-w-md mx-auto"
+                                className="w-full max-w-md mx-auto ml-4"
                             />
                         </div>
 
@@ -185,9 +182,6 @@ const MusicPlayer: FC = () => {
                                 }}
                                 className="w-full max-w-md mx-auto"
                             />
-                        </div>
-
-                        <div className="flex items-center mt-4 w-full">
                             <Slider
                                 label="High Shelf Frequency"
                                 size="md"
@@ -201,7 +195,7 @@ const MusicPlayer: FC = () => {
                                         handleHighShelfFreqChange(value);
                                     }
                                 }}
-                                className="w-full max-w-md mx-auto"
+                                className="w-full max-w-md mx-auto ml-4"
                             />
                         </div>
 
