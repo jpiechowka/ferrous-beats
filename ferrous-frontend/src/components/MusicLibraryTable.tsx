@@ -40,23 +40,31 @@ export default function MusicLibraryTable() {
                 <TableHeader>
                     <TableColumn>#</TableColumn>
                     <TableColumn>File Name</TableColumn>
+                    <TableColumn>Extension</TableColumn>
                     <TableColumn>Actions</TableColumn>
                 </TableHeader>
                 <TableBody>
-                    {playlist.map((file, index) => (
-                        <TableRow key={index}>
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell>{file}</TableCell>
-                            <TableCell>
-                                <Button
-                                    color="primary"
-                                    onClick={() => handlePlay(file)}
-                                >
-                                    Play
-                                </Button>
-                            </TableCell>
-                        </TableRow>
-                    ))}
+                    {playlist.map((file, index) => {
+                        const lastDotIndex = file.lastIndexOf('.');
+                        const fileName = lastDotIndex !== -1 ? file.slice(0, lastDotIndex) : file;
+                        const fileExtension = lastDotIndex !== -1 ? file.slice(lastDotIndex + 1) : '';
+
+                        return (
+                            <TableRow key={index}>
+                                <TableCell>{index + 1}</TableCell>
+                                <TableCell>{fileName}</TableCell>
+                                <TableCell>{fileExtension}</TableCell>
+                                <TableCell>
+                                    <Button
+                                        color="primary"
+                                        onClick={() => handlePlay(file)}
+                                    >
+                                        Play
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        );
+                    })}
                 </TableBody>
             </Table>
         </>
