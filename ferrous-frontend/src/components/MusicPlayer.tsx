@@ -9,7 +9,6 @@ import {FaRegHeart} from "react-icons/fa";
 import {FaCirclePause, FaCirclePlay, FaRepeat, FaShuffle} from "react-icons/fa6";
 import {ImNext, ImPrevious} from "react-icons/im";
 
-
 const MusicPlayer: FC = () => {
     const {
         currentTrackName,
@@ -33,11 +32,20 @@ const MusicPlayer: FC = () => {
         handleHighShelfGainChange,
         handleLowShelfFreqChange,
         handleHighShelfFreqChange,
+        currentTime,
+        duration,
+        handleSeekTo,
     } = useMusicPlayerContext();
 
     if (!currentTrackName || currentTrackName.trim() === "") {
         return null; // Don't render anything if no track is playing
     }
+
+    const formatTime = (time: number) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
 
     return (
         <Card
@@ -113,6 +121,24 @@ const MusicPlayer: FC = () => {
                             >
                                 <FaRepeat size={24} className={isRepeatOn ? "text-primary" : ""}/>
                             </Button>
+                        </div>
+
+                        <div className="flex items-center mt-4 w-full">
+                            <span className="mr-2">{formatTime(currentTime)}</span>
+                            <Slider
+                                size="sm"
+                                step={1}
+                                maxValue={duration}
+                                minValue={0}
+                                value={currentTime}
+                                onChange={(value) => {
+                                    if (typeof value === 'number') {
+                                        handleSeekTo(value);
+                                    }
+                                }}
+                                className="w-full max-w-md mx-auto"
+                            />
+                            <span className="ml-2">{formatTime(duration)}</span>
                         </div>
 
                         <div className="flex items-center mt-4 w-full">

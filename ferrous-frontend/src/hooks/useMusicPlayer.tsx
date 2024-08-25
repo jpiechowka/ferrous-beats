@@ -16,6 +16,8 @@ export const useMusicPlayer = () => {
     const [highShelfFreq, setHighShelfFreq] = useState<number>(2000);
     const [lowshelfFilter, setLowshelfFilter] = useState<BiquadFilterNode | null>(null);
     const [highshelfFilter, setHighshelfFilter] = useState<BiquadFilterNode | null>(null);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
     const [howl, setHowl] = useState<Howl | null>(null);
 
     const handleUpdatePlaylistContents = useCallback((newPlaylistContents: string[]) => {
@@ -35,6 +37,8 @@ export const useMusicPlayer = () => {
             html5: false, // TODO: Enable HTML5 audio when supported, might now work currently with bass / treble filters
             volume: currentVolume,
             onload: () => {
+                setDuration(newHowl.duration());
+
                 const audioCtx = Howler.ctx;
                 const source = Howler.masterGain;
                 const newLowshelfFilter = audioCtx.createBiquadFilter();
@@ -76,6 +80,7 @@ export const useMusicPlayer = () => {
                     // TODO: stack overflow here?
                     console.debug(`Repeat is off, playing next track: ${playlist[nextIndex]}`);
                     handlePlay(playlist[nextIndex]);
+                    // TODO: call handleNext() somehow;
                 }
             },
             onpause: () => {
@@ -134,7 +139,9 @@ export const useMusicPlayer = () => {
 
     const handleSeekTo = useCallback((position: number) => {
         if (howl) {
+            console.debug(`Seeking to position ${position}`);
             howl.seek(position);
+            setCurrentTime(position);
         }
     }, [howl]);
 
@@ -232,10 +239,12 @@ export const useMusicPlayer = () => {
         handlePlayPause,
         handleNext,
         handlePrevious,
-        handleSeekTo,
         handleLowShelfGainChange,
         handleHighShelfGainChange,
         handleLowShelfFreqChange,
         handleHighShelfFreqChange,
+        currentTime,
+        duration,
+        handleSeekTo
     }
 }
