@@ -1,4 +1,4 @@
-import {useCallback, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {Howl} from "howler";
 
 export const useMusicPlayer = () => {
@@ -19,6 +19,20 @@ export const useMusicPlayer = () => {
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [howl, setHowl] = useState<Howl | null>(null);
+
+    useEffect(() => {
+        let updateTimer: number;
+        if (howl && isMusicPlaying) {
+            updateTimer = window.setInterval(() => {
+                setCurrentTime(howl.seek());
+            }, 1000); // Update every second
+        }
+        return () => {
+            if (updateTimer) {
+                clearInterval(updateTimer);
+            }
+        };
+    }, [howl, isMusicPlaying]);
 
     const handleUpdatePlaylistContents = useCallback((newPlaylistContents: string[]) => {
         console.debug("Updating playlist contents");
